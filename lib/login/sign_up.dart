@@ -5,14 +5,13 @@ import 'package:ncc/appscreens/home_page.dart';
 
 import '../authentication.dart';
 
-class LoginScreen extends StatefulWidget {
-  static const String id = 'login_screen';
+class SignupScreen extends StatefulWidget {
+  static const String id = 'signup_screen';
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  State<SignupScreen> createState() => _SignupScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
-  //final _auth = FirebaseAuth.instance;
+class _SignupScreenState extends State<SignupScreen> {
   String email = '';
   String password = '';
   String success = '';
@@ -38,7 +37,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 alignment: Alignment.center,
                 padding: const EdgeInsets.all(10),
                 child: const Text(
-                  'Login',
+                  'Sign up',
                   style: (TextStyle(fontSize: 35)),
                 ),
               ),
@@ -52,7 +51,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 onChanged: (value) {
                   email = value;
                 },
-                decoration: kLoginFieldDecoration.copyWith(
+                decoration: kSignupFieldDecoration.copyWith(
                     hintText: 'Enter your email'),
               ),
               const SizedBox(
@@ -65,7 +64,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 onChanged: (value) {
                   password = value;
                 },
-                decoration: kLoginFieldDecoration.copyWith(
+                decoration: kSignupFieldDecoration.copyWith(
                     hintText: 'Enter your password'),
               ),
               const SizedBox(
@@ -73,17 +72,17 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  primary: Color(0xFFE2CAF1),
+                  primary: const Color(0xFFFFE999),
                   minimumSize: const Size(150, 45),
                   maximumSize: const Size(150, 45),
                   elevation: 7.0,
                   shape: RoundedRectangleBorder(
-                    borderRadius: new BorderRadius.circular(30.0),
+                    borderRadius: BorderRadius.circular(30.0),
                   ),
                 ),
-                onPressed: () async {
+                onPressed: () {
                   AuthenticationHelper()
-                      .signIn(email: email, password: password)
+                      .signUp(email: email, password: password)
                       .then((error) {
                     if (error == null) {
                       Navigator.pushNamed(context, HomePage.id);
@@ -95,13 +94,14 @@ class _LoginScreenState extends State<LoginScreen> {
                       //   ),
                       // ));
                       setState(() {
-                        success = 'There was an error with your login attempt.';
+                        success =
+                            'There was an error with your sign in attempt.';
                       });
                     }
                   });
                 },
                 child: const Text(
-                  'Login',
+                  'Submit',
                   style: TextStyle(
                     color: Colors.black,
                   ),
@@ -121,27 +121,3 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 }
-
-// class login extends StatefulWidget {
-//   static const String id = 'login_screen';
-//   //static
-//   //@override
-//   //State<login> createState() => _loginState();
-// }
-
-// class _loginState extends State<login> {
-//  const String _title = '';
-//   @override
-//   Widget build(BuildContext context) {
-//     return MaterialApp(
-//       title: _title,
-//       home: Scaffold(
-//         appBar: AppBar(
-//           title: Text("<--"),
-//           backgroundColor: Colors.white,
-//         ),
-//         body: const MyStatefulWidget(),
-//       ),
-//     );
-//   }
-// }
