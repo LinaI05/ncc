@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:ncc/login/login.dart';
 import 'package:ncc/login/sign_up.dart';
+import 'package:persistent_bottom_nav_bar_v2/persistent-tab-view.dart';
 
 class StartScreen extends StatefulWidget {
   static const String id = 'start_screen';
@@ -61,7 +62,11 @@ class _StartScreenState extends State<StartScreen> {
                                           BorderRadius.circular(18.0)))))),
               TextButton(
                 onPressed: () {
-                  Navigator.pushNamed(context, LoginScreen.id);
+                  pushNewScreenWithRouteSettings(
+                    context,
+                    screen: LoginScreen(),
+                    settings: RouteSettings(name: LoginScreen.id),
+                  );
                 },
                 child: const Text(
                   'Login',
