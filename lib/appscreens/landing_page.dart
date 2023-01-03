@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ncc/appscreens/hotlines_page.dart';
 import 'settings_page.dart';
 import 'home_page.dart';
 import 'activities_page.dart';
@@ -19,7 +20,8 @@ class _LandingPageState extends State<LandingPage> {
     return [
       homePage(),
       ActivitiesPage(),
-      //achievePage(),
+      achievePage(),
+      hotlinePage(),
       settingsPage(),
     ];
   }
@@ -38,12 +40,18 @@ class _LandingPageState extends State<LandingPage> {
         activeColorPrimary: Color(0xFF115D6C),
         inactiveColorPrimary: Color(0xFF93D1DE),
       ),
-      // PersistentBottomNavBarItem(
-      //   icon: Icon(Icons.emoji_events),
-      //   title: 'Achievements',
-      //   activeColorPrimary: Color(0xFF115D6C),
-      //   inactiveColorPrimary: Color(0xFF93D1DE),
-      // ),
+      PersistentBottomNavBarItem(
+        icon: Icon(Icons.emoji_events),
+        title: 'Achievements',
+        activeColorPrimary: Color(0xFF115D6C),
+        inactiveColorPrimary: Color(0xFF93D1DE),
+      ),
+      PersistentBottomNavBarItem(
+        icon: Icon(Icons.phone),
+        title: 'Hotlines',
+        activeColorPrimary: Color(0xFF115D6C),
+        inactiveColorPrimary: Color(0xFF93D1DE),
+      ),
       PersistentBottomNavBarItem(
         icon: Icon(Icons.settings),
         title: 'Settings',

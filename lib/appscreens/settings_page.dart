@@ -148,19 +148,19 @@ class settingsPage extends StatelessWidget {
                 });
               },
             ),
-            SettingTile(
-              titleText: 'Hotlines',
-              textSize: 30.0,
-              tileColor: Color(0xFF78BA7D),
-              onTap: () async {
-                const url = 'https://www.pleaselive.org/hotlines/';
-                if (await canLaunchUrl(Uri.parse(url))) {
-                  await launchUrl(Uri.parse(url));
-                } else {
-                  throw "Could not launch $url";
-                }
-              },
-            ),
+            // SettingTile(
+            //   titleText: 'Hotlines',
+            //   textSize: 30.0,
+            //   tileColor: Color(0xFF78BA7D),
+            //   onTap: () async {
+            //     const url = 'https://www.pleaselive.org/hotlines/';
+            //     if (await canLaunchUrl(Uri.parse(url))) {
+            //       await launchUrl(Uri.parse(url));
+            //     } else {
+            //       throw "Could not launch $url";
+            //     }
+            //   },
+            // ),
             // SettingTile(
             //   titleText: 'Coping Plan',
             //   textSize: 30.0,
@@ -172,7 +172,7 @@ class settingsPage extends StatelessWidget {
               textSize: 25.0,
               tileColor: Color(0xFFF8B600),
               onTap: () async {
-                const url = 'http://www.novice.org/';
+                const url = 'https://www.novicc.org/';
                 if (await canLaunchUrl(Uri.parse(url))) {
                   await launchUrl(Uri.parse(url));
                 } else {
