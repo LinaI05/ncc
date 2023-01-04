@@ -19,6 +19,9 @@ const kLoginFieldDecoration = InputDecoration(
   ),
 );
 
+const loginButtonColors = Color(0xFFE2CAF1);
+const signUpButtonColors = Color(0xFFFFE999);
+
 const kSignupFieldDecoration = InputDecoration(
   filled: true,
   fillColor: Color(0xFFFFF8DF),

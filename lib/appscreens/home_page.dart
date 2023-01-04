@@ -1,6 +1,7 @@
 import 'package:bubble/bubble.dart';
 import 'package:flutter/material.dart';
 import 'package:ncc/constants.dart';
+import 'package:ncc/helpers/achievements-helper.dart';
 import 'package:ncc/helpers/api-helper.dart';
 import 'package:ncc/helpers/affirmations-helper.dart';
 import 'package:http/http.dart' as http;
@@ -156,6 +157,7 @@ class _homePageState extends State<homePage> {
                         } else if (_goalsList[1] == '') {
                           final goal = await openDialog(1);
                         } else if (_goalsList[2] == '') {
+                          await updateAchievement("3goals");
                           final goal = await openDialog(2);
                         } else {
                           openAlert();

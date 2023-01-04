@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:ncc/constants.dart';
 import 'package:ncc/appscreens/checkin.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'dart:io' show Platform;
+import 'package:ncc/helpers/achievements-helper.dart';
 
 import '../authentication.dart';
 
 class LoginScreen extends StatefulWidget {
   static const String id = 'login_screen';
+
+  const LoginScreen({Key? key}) : super(key: key);
   @override
   State<LoginScreen> createState() => _LoginScreenState();
 }
@@ -29,7 +33,6 @@ class _LoginScreenState extends State<LoginScreen> {
             child: SingleChildScrollView(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
-                //crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: <Widget>[
                   Container(
                       alignment: Alignment.center,
@@ -79,19 +82,20 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      primary: Color(0xFFE2CAF1),
+                      backgroundColor: loginButtonColors,
                       minimumSize: const Size(150, 45),
                       maximumSize: const Size(150, 45),
                       elevation: 7.0,
                       shape: RoundedRectangleBorder(
-                        borderRadius: new BorderRadius.circular(30.0),
+                        borderRadius: BorderRadius.circular(30.0),
                       ),
                     ),
                     onPressed: () async {
                       AuthenticationHelper()
                           .signIn(email: email, password: password)
-                          .then((error) {
+                          .then((error) async {
                         if (error == null) {
+                          await getUserAchievements();
                           Navigator.pushNamed(context, CheckinScreen.id);
                         } else {
                           setState(() {
@@ -113,12 +117,12 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   ElevatedButton.icon(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Color(0xFFE2CAF1),
+                      backgroundColor: loginButtonColors,
                       minimumSize: const Size(225, 45),
                       maximumSize: const Size(225, 45),
                       elevation: 7.0,
                       shape: RoundedRectangleBorder(
-                        borderRadius: new BorderRadius.circular(30.0),
+                        borderRadius: BorderRadius.circular(30.0),
                       ),
                       padding: const EdgeInsets.only(
                         left: 7.0,
@@ -131,6 +135,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     onPressed: () async {
                       try {
                         await AuthenticationHelper().signInwithGoogle();
+                        await getUserAchievements();
                         Navigator.pushNamed(context, CheckinScreen.id);
                       } catch (e) {
                         setState(() {
@@ -154,12 +159,12 @@ class _LoginScreenState extends State<LoginScreen> {
                   if (Platform.isIOS)
                     ElevatedButton.icon(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Color(0xFFE2CAF1),
+                        backgroundColor: loginButtonColors,
                         minimumSize: const Size(200, 45),
                         maximumSize: const Size(200, 45),
                         elevation: 7.0,
                         shape: RoundedRectangleBorder(
-                          borderRadius: new BorderRadius.circular(30.0),
+                          borderRadius: BorderRadius.circular(30.0),
                         ),
                         padding: const EdgeInsets.only(
                           left: 10.0,
@@ -171,13 +176,13 @@ class _LoginScreenState extends State<LoginScreen> {
                         height: 35,
                       ),
                       onPressed: () async {
-                        final credential =
-                            await SignInWithApple.getAppleIDCredential(
+                        await SignInWithApple.getAppleIDCredential(
                           scopes: [
                             AppleIDAuthorizationScopes.email,
                             AppleIDAuthorizationScopes.fullName,
                           ],
                         );
+                        await getUserAchievements();
                         Navigator.pushNamed(context, CheckinScreen.id);
                       },
                       label: const Text(
@@ -205,27 +210,3 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 }
-
-// class login extends StatefulWidget {
-//   static const String id = 'login_screen';
-//   //static
-//   //@override
-//   //State<login> createState() => _loginState();
-// }
-
-// class _loginState extends State<login> {
-//  const String _title = '';
-//   @override
-//   Widget build(BuildContext context) {
-//     return MaterialApp(
-//       title: _title,
-//       home: Scaffold(
-//         appBar: AppBar(
-//           title: Text("<--"),
-//           backgroundColor: Colors.white,
-//         ),
-//         body: const MyStatefulWidget(),
-//       ),
-//     );
-//   }
-// }

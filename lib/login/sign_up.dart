@@ -2,11 +2,14 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:ncc/constants.dart';
 import 'package:ncc/appscreens/landing_page.dart';
+import 'package:ncc/helpers/achievements-helper.dart';
 
 import '../authentication.dart';
 
 class SignupScreen extends StatefulWidget {
   static const String id = 'signup_screen';
+
+  const SignupScreen({Key? key}) : super(key: key);
   @override
   State<SignupScreen> createState() => _SignupScreenState();
 }
@@ -79,7 +82,7 @@ class _SignupScreenState extends State<SignupScreen> {
                   ),
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      primary: const Color(0xFFFFE999),
+                      backgroundColor: signUpButtonColors,
                       minimumSize: const Size(150, 45),
                       maximumSize: const Size(150, 45),
                       elevation: 7.0,
@@ -90,8 +93,9 @@ class _SignupScreenState extends State<SignupScreen> {
                     onPressed: () {
                       AuthenticationHelper()
                           .signUp(email: email, password: password)
-                          .then((error) {
+                          .then((error) async {
                         if (error == null) {
+                          await getUserAchievements();
                           Navigator.pushNamed(context, LandingPage.id);
                         } else {
                           setState(() {

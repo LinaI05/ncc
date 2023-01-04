@@ -3,6 +3,7 @@ import 'package:ncc/appscreens/hotlines_page.dart';
 import 'settings_page.dart';
 import 'home_page.dart';
 import 'activities_page.dart';
+import 'copingplans_page.dart';
 import 'achieve_page.dart';
 import 'package:persistent_bottom_nav_bar_v2/persistent-tab-view.dart';
 
@@ -20,6 +21,7 @@ class _LandingPageState extends State<LandingPage> {
     return [
       homePage(),
       ActivitiesPage(),
+      copingPlansPage(),
       achievePage(),
       hotlinePage(),
       settingsPage(),
@@ -37,6 +39,12 @@ class _LandingPageState extends State<LandingPage> {
       PersistentBottomNavBarItem(
         icon: Icon(Icons.toc),
         title: 'Activities',
+        activeColorPrimary: Color(0xFF115D6C),
+        inactiveColorPrimary: Color(0xFF93D1DE),
+      ),
+      PersistentBottomNavBarItem(
+        icon: Icon(Icons.calendar_month_outlined),
+        title: 'Coping Plans',
         activeColorPrimary: Color(0xFF115D6C),
         inactiveColorPrimary: Color(0xFF93D1DE),
       ),
@@ -69,6 +77,12 @@ class _LandingPageState extends State<LandingPage> {
       screens: _buildScreens(),
       items: _navBarsItems(),
       navBarStyle: NavBarStyle.style13,
+      stateManagement: false,
+      onItemSelected: (index) {
+        setState(() {
+          _controller.index = index;
+        });
+      },
     );
   }
 }

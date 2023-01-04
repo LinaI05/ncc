@@ -122,45 +122,36 @@ class settingsPage extends StatelessWidget {
               },
             ),
             SettingTile(
+              titleText: 'Delete my Account',
+              textSize: 25.0,
+              tileColor: Color(0xFF2FA9C0),
+              onTap: () {
+                try {
+                  AuthenticationHelper().deleteUser();
+                } catch (e, s) {
+                  print(s);
+                }
+                Navigator.of(context)
+                    .maybePop(ModalRoute.withName('start_screen'));
+                pushNewScreen(context,
+                    screen: StartScreen(), withNavBar: false);
+              },
+            ),
+            SettingTile(
               titleText: 'Log Out',
               textSize: 30.0,
               tileColor: Color(0xFFCF726A),
               onTap: () {
-                // Navigator.of(context).popUntil((route) {
-                //   return route.settings.name == LoginScreen.id;
-                // });
-                //Navigator.pushNamed(context, LoginScreen.id);
-                // Navigator.popUntil(
-                //     context, ModalRoute.withName(LoginScreen.id));
-                // print("hello");
                 AuthenticationHelper().signOut().then((error) {
                   if (error == null) {
-                    // pushNewScreen(context,
-                    //     screen: StartScreen(), withNavBar: false);
                     Navigator.of(context)
-                        .popUntil(ModalRoute.withName('start_screen'));
+                        .maybePop(ModalRoute.withName('start_screen'));
                     pushNewScreen(context,
                         screen: StartScreen(), withNavBar: false);
-                    // Navigator.of(context).pushAndRemoveUntil(
-                    //     MaterialPageRoute(builder: (context) => StartScreen()),
-                    //     (Route<dynamic> route) => false);
                   } else {}
                 });
               },
             ),
-            // SettingTile(
-            //   titleText: 'Hotlines',
-            //   textSize: 30.0,
-            //   tileColor: Color(0xFF78BA7D),
-            //   onTap: () async {
-            //     const url = 'https://www.pleaselive.org/hotlines/';
-            //     if (await canLaunchUrl(Uri.parse(url))) {
-            //       await launchUrl(Uri.parse(url));
-            //     } else {
-            //       throw "Could not launch $url";
-            //     }
-            //   },
-            // ),
             // SettingTile(
             //   titleText: 'Coping Plan',
             //   textSize: 30.0,

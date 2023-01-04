@@ -3,6 +3,7 @@ import 'package:ncc/appscreens/audioplayer_page.dart';
 import 'package:ncc/appscreens/cute_images_page.dart';
 import 'package:ncc/journalscreens/journal_page.dart';
 import 'package:persistent_bottom_nav_bar_v2/persistent-tab-view.dart';
+import 'package:ncc/helpers/achievements-helper.dart';
 
 class ActivitiesPage extends StatelessWidget {
   static String routeName = 'activitiesPage';
@@ -49,7 +50,7 @@ class ActivitiesPage extends StatelessWidget {
                     crossAxisCount: 2),
                 itemBuilder: (_, i) {
                   return IconButton(
-                    onPressed: () {
+                    onPressed: () async {
                       if (i == 7) {
                         pushNewScreenWithRouteSettings(context,
                             settings:
@@ -57,6 +58,8 @@ class ActivitiesPage extends StatelessWidget {
                             screen: CuteImagesClass(),
                             withNavBar: true);
                       } else if (i == 0) {
+                        // Achievement 3: Journal Page
+                        await updateAchievement("journaling");
                         pushNewScreenWithRouteSettings(context,
                             settings:
                                 RouteSettings(name: ActivitiesPage.routeName),

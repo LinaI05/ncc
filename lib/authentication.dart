@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:firebase_database/firebase_database.dart';
 
 class AuthenticationHelper {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -16,6 +17,18 @@ class AuthenticationHelper {
       return null;
     } on FirebaseAuthException catch (e) {
       return e.message;
+    }
+  }
+
+  Future<bool> deleteUser() async {
+    try {
+      user.delete();
+      final uid = user.uid;
+      DatabaseReference ref = FirebaseDatabase.instance.ref("users/$uid");
+      ref.remove();
+      return true;
+    } catch (e) {
+      return false;
     }
   }
 
