@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:ncc/appscreens/audioplayer_page.dart';
 import 'package:ncc/appscreens/cute_images_page.dart';
+import 'package:ncc/authentication.dart';
 import 'package:ncc/journalscreens/journal_page.dart';
 import 'package:persistent_bottom_nav_bar_v2/persistent-tab-view.dart';
 import 'package:ncc/helpers/achievements-helper.dart';
+
+import '../start_screen.dart';
 
 class ActivitiesPage extends StatelessWidget {
   static String routeName = 'activitiesPage';
@@ -59,12 +62,43 @@ class ActivitiesPage extends StatelessWidget {
                             withNavBar: true);
                       } else if (i == 0) {
                         // Achievement 3: Journal Page
-                        await updateAchievement("journaling");
-                        pushNewScreenWithRouteSettings(context,
-                            settings:
-                                RouteSettings(name: ActivitiesPage.routeName),
-                            screen: JournalPage(),
-                            withNavBar: true);
+                        if (guestLogin == true) {
+                          showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return AlertDialog(
+                                title: Text("Login Required"),
+                                content:
+                                    Text("Please login to use this feature"),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () {
+                                      Navigator.of(context).pop();
+                                    },
+                                    child: Text("OK"),
+                                  ),
+                                  TextButton(
+                                    onPressed: () {
+                                      Navigator.of(context).maybePop(
+                                          ModalRoute.withName('start_screen'));
+                                      pushNewScreen(context,
+                                          screen: StartScreen(),
+                                          withNavBar: false);
+                                    },
+                                    child: Text("Go to Login Screen"),
+                                  ),
+                                ],
+                              );
+                            },
+                          );
+                        } else {
+                          await updateAchievement("journaling");
+                          pushNewScreenWithRouteSettings(context,
+                              settings:
+                                  RouteSettings(name: ActivitiesPage.routeName),
+                              screen: JournalPage(),
+                              withNavBar: true);
+                        }
                       } else {
                         pushNewScreenWithRouteSettings(context,
                             settings:

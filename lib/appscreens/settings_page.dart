@@ -4,6 +4,8 @@ import 'package:ncc/authentication.dart';
 import 'package:ncc/start_screen.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'landing_page.dart';
+import 'package:ncc/helpers/achievements-helper.dart';
 import 'package:persistent_bottom_nav_bar_v2/persistent-tab-view.dart';
 
 Future<String> getDisplayName() async {
@@ -26,10 +28,20 @@ Future<String> getSelectedPhoto() async {
   }
 }
 
-class settingsPage extends StatelessWidget {
+class settingsPage extends StatefulWidget {
   static String routeName = 'profilepage';
+  const settingsPage({Key? key}) : super(key: key);
+
+  @override
+  State<settingsPage> createState() => _settingsPageState();
+}
+
+class _settingsPageState extends State<settingsPage> {
   @override
   Widget build(BuildContext context) {
+    if (guestLogin) {
+      Future.delayed(Duration.zero, () => showGuestLoginAlert(context));
+    }
     return Scaffold(
       body: Padding(
         padding: const EdgeInsets.only(top: 50.0, left: 10.0, right: 10.0),
@@ -50,10 +62,20 @@ class settingsPage extends StatelessWidget {
             FutureBuilder(
               builder: (ctx, snapshot) {
                 if (snapshot.connectionState == ConnectionState.done) {
-                  if (snapshot.hasError) {
-                    return Text(
-                      '${snapshot.error} occurred',
-                      style: TextStyle(fontFamily: 'SourceSans'),
+                  if (guestLogin == true) {
+                    return Center(
+                      child: Text(
+                        'User has not logged in',
+                        style: TextStyle(fontFamily: 'SourceSans'),
+                      ),
+                    );
+                  } else if (snapshot.hasError) {
+                    print(snapshot.error);
+                    return Center(
+                      child: Text(
+                        '${snapshot.error} occurred',
+                        style: TextStyle(fontFamily: 'SourceSans'),
+                      ),
                     );
                   } else {
                     final data = snapshot.data as String;
@@ -77,10 +99,19 @@ class settingsPage extends StatelessWidget {
             FutureBuilder(
               builder: (ctx, snapshot) {
                 if (snapshot.connectionState == ConnectionState.done) {
-                  if (snapshot.hasError) {
-                    return Text(
-                      '${snapshot.error} occurred',
-                      style: const TextStyle(fontFamily: 'SourceSans'),
+                  if (guestLogin == true) {
+                    return Center(
+                      child: Text(
+                        'User has not logged in',
+                        style: TextStyle(fontFamily: 'SourceSans'),
+                      ),
+                    );
+                  } else if (snapshot.hasError) {
+                    return Center(
+                      child: Text(
+                        '${snapshot.error} occurred',
+                        style: const TextStyle(fontFamily: 'SourceSans'),
+                      ),
                     );
                   } else {
                     final data = snapshot.data as String;

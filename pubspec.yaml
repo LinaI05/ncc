@@ -49,6 +49,10 @@ dependencies:
   provider: ^6.0.0
   sign_in_with_apple: ^4.3.0
   loading_animation_widget: ^1.2.0+4
+  syncfusion_flutter_calendar: ^20.4.42
+  syncfusion_flutter_sliders: ^20.4.43
+#  mojo_perception: ^2.0.0
+
 
 dev_dependencies:
   flutter_test:
@@ -89,6 +93,8 @@ flutter:
     - assets/achievements/
     - assets/profile/
     - assets/animals/
+#    - packages/mojo_perception/assets/face_landmark_with_attention.tflite
+#    - packages/mojo_perception/assets/face_detection_short_range.tflite
 
   # To add assets to your application, add an assets section, like this:
   # assets:

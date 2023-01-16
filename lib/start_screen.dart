@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:ncc/appscreens/checkin.dart';
 import 'package:ncc/login/login.dart';
 import 'package:ncc/login/sign_up.dart';
+import 'authentication.dart';
 import 'package:persistent_bottom_nav_bar_v2/persistent-tab-view.dart';
 
 class StartScreen extends StatefulWidget {
@@ -17,7 +19,7 @@ class _StartScreenState extends State<StartScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Padding(
-          padding: EdgeInsets.symmetric(vertical: 45.0, horizontal: 4.0),
+          padding: EdgeInsets.symmetric(vertical: 50.0, horizontal: 4.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
@@ -25,7 +27,7 @@ class _StartScreenState extends State<StartScreen> {
                 alignment: Alignment.center,
                 padding: const EdgeInsets.all(30),
                 child: const Text(
-                  'Welcome to Joining the Journey',
+                  'Welcome to Restoring Mindsets',
                   style: (TextStyle(fontSize: 30, fontFamily: 'Italianno')),
                 ),
               ),
@@ -72,6 +74,24 @@ class _StartScreenState extends State<StartScreen> {
                   'Login',
                   style: TextStyle(
                     color: Colors.green,
+                    decoration: TextDecoration.underline,
+                    fontFamily: 'SourceSans',
+                  ),
+                ),
+              ),
+              TextButton(
+                onPressed: () {
+                  guestLogin = true;
+                  pushNewScreenWithRouteSettings(
+                    context,
+                    screen: CheckinScreen(),
+                    settings: RouteSettings(name: CheckinScreen.id),
+                  );
+                },
+                child: const Text(
+                  'Continue as Guest',
+                  style: TextStyle(
+                    color: Colors.lightGreen,
                     decoration: TextDecoration.underline,
                     fontFamily: 'SourceSans',
                   ),

@@ -96,6 +96,7 @@ class _SignupScreenState extends State<SignupScreen> {
                           .then((error) async {
                         if (error == null) {
                           await getUserAchievements();
+                          guestLogin = false;
                           Navigator.pushNamed(context, LandingPage.id);
                         } else {
                           setState(() {

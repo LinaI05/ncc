@@ -96,6 +96,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           .then((error) async {
                         if (error == null) {
                           await getUserAchievements();
+                          guestLogin = false;
                           Navigator.pushNamed(context, CheckinScreen.id);
                         } else {
                           setState(() {
@@ -136,6 +137,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       try {
                         await AuthenticationHelper().signInwithGoogle();
                         await getUserAchievements();
+                        guestLogin = false;
                         Navigator.pushNamed(context, CheckinScreen.id);
                       } catch (e) {
                         setState(() {
@@ -183,6 +185,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           ],
                         );
                         await getUserAchievements();
+                        guestLogin = false;
                         Navigator.pushNamed(context, CheckinScreen.id);
                       },
                       label: const Text(

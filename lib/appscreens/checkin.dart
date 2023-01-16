@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ncc/appscreens/emotion_detect_page.dart';
 import 'package:persistent_bottom_nav_bar_v2/persistent-tab-view.dart';
 import 'landing_page.dart';
 
@@ -35,6 +36,18 @@ class _CheckinScreenState extends State<CheckinScreen> {
             top: 60.0, left: 5.0, right: 5.0, bottom: 30.0),
         child: Column(
           children: <Widget>[
+            Align(
+              child: IconButton(
+                icon: const Icon(Icons.camera_alt),
+                onPressed: () {
+                  // pushNewScreenWithRouteSettings(
+                  //   context,
+                  //   screen: EmotionPage(),
+                  //   settings: RouteSettings(name: LandingPage.id),
+                  // );
+                },
+              ),
+            ),
             const Text(
               'What are you feeling today?',
               style: TextStyle(

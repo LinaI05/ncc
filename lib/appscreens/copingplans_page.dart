@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ncc/helpers/achievements-helper.dart';
 
 class copingPlansPage extends StatefulWidget {
   const copingPlansPage({Key? key}) : super(key: key);
@@ -20,6 +21,7 @@ class _copingPlansPageState extends State<copingPlansPage> {
         ),
         child: Center(
           child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const Text(
                 'Pick a Coping Plan',
@@ -30,25 +32,61 @@ class _copingPlansPageState extends State<copingPlansPage> {
                 ),
               ),
               Spacer(),
-              ElevatedButton(
-                child: const Text(
-                  'Depression',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontFamily: 'SourceSans',
-                    fontSize: 29.0,
+              Row(
+                children: [
+                  ElevatedButton(
+                    child: const Text(
+                      'Depression',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontFamily: 'SourceSans',
+                        fontSize: 29.0,
+                      ),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFCF726A),
+                      minimumSize: const Size(250, 60),
+                      maximumSize: const Size(250, 60),
+                      elevation: 7.0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30.0),
+                      ),
+                    ),
+                    onPressed: () {},
                   ),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFCF726A),
-                  minimumSize: const Size(300, 60),
-                  maximumSize: const Size(300, 60),
-                  elevation: 7.0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30.0),
-                  ),
-                ),
-                onPressed: () {},
+                  Switch.adaptive(
+                    value: false,
+                    onChanged: (newValue) {
+                      if (newValue == true) {
+                        showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return AlertDialog(
+                              title: Text("Add Event to Calendar"),
+                              content: Text(
+                                  "Would you like to add the events of the depression calendar to your own?"),
+                              actions: [
+                                TextButton(
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
+                                  },
+                                  child: Text("No"),
+                                ),
+                                TextButton(
+                                  onPressed: () async {
+                                    await updateDepressionCalendar();
+                                    Navigator.of(context).pop();
+                                  },
+                                  child: Text("Yes"),
+                                ),
+                              ],
+                            );
+                          },
+                        );
+                      } else {}
+                    },
+                  )
+                ],
               ),
               Spacer(),
               ElevatedButton(
