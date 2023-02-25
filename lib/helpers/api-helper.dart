@@ -1,12 +1,10 @@
-import 'package:http/http.dart' as http;
+class JokesModel {
+  final String joke;
+  final String jokes;
 
-class ApiHelper {
-  Future getDadJoke() async {
-    var url = "https://icanhazdadjoke.com/";
-    http.Response response =
-        (await http.get(Uri.parse(url), headers: {"Accept": "text/plain"}));
-    String body = response.body;
-    // var data = jsonDecode(body);
-    return body;
+  JokesModel({required this.joke, required this.jokes});
+
+  factory JokesModel.fromJson(final json) {
+    return JokesModel(joke: json["setup"], jokes: json["punchline"]);
   }
 }

@@ -18,13 +18,24 @@ Future<void> updateAchievement(String achieveName) async {
 }
 
 Future<void> updateDepressionCalendar() async {
-  final FirebaseAuth auth = FirebaseAuth.instance;
-  final User? user = auth.currentUser;
-  final uid = user?.uid;
-  DatabaseReference ref = FirebaseDatabase.instance.ref("users/$uid");
-  await ref.update({
+  final FirebaseAuth authD = FirebaseAuth.instance;
+  final User? userD = authD.currentUser;
+  final uidD = userD?.uid;
+  DatabaseReference refD = FirebaseDatabase.instance.ref("users/$uidD");
+  await refD.update({
     "depression-calendar": true,
     "depression-sd": DateTime.now().toString(),
+  });
+}
+
+Future<void> updateAnxietyCalendar() async {
+  final FirebaseAuth authA = FirebaseAuth.instance;
+  final User? userA = authA.currentUser;
+  final uidA = userA?.uid;
+  DatabaseReference refA = FirebaseDatabase.instance.ref("users/$uidA");
+  await refA.update({
+    "anxiety-calendar": true,
+    "anxiety-sd": DateTime.now().toString(),
   });
 }
 
@@ -82,6 +93,8 @@ Future<void> getUserAchievements() async {
       "journaling": false,
       "depression-calendar": false,
       "depression-sd": "",
+      "anxiety-calendar": false,
+      "anxiety-sd": "",
     });
     return;
   }

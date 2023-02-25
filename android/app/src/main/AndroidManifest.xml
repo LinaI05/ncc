@@ -2,7 +2,7 @@
     package="com.cfn.ncc">
     <uses-permission android:name="android.permission.INTERNET" />
     <application
-        android:label="Noco Toolbox"
+        android:label="Restoring Mindsets"
         android:name="${applicationName}"
         android:icon="@mipmap/launcher_icon">
         <activity

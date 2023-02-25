@@ -9,6 +9,9 @@ class copingPlansPage extends StatefulWidget {
 }
 
 class _copingPlansPageState extends State<copingPlansPage> {
+  bool isSwitchedD = false;
+  bool isSwitchedA = false;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -55,7 +58,7 @@ class _copingPlansPageState extends State<copingPlansPage> {
                     onPressed: () {},
                   ),
                   Switch.adaptive(
-                    value: false,
+                    value: isSwitchedD,
                     onChanged: (newValue) {
                       if (newValue == true) {
                         showDialog(
@@ -74,6 +77,9 @@ class _copingPlansPageState extends State<copingPlansPage> {
                                 ),
                                 TextButton(
                                   onPressed: () async {
+                                    setState(() {
+                                      isSwitchedD = newValue;
+                                    });
                                     await updateDepressionCalendar();
                                     Navigator.of(context).pop();
                                   },
@@ -89,25 +95,64 @@ class _copingPlansPageState extends State<copingPlansPage> {
                 ],
               ),
               Spacer(),
-              ElevatedButton(
-                child: const Text(
-                  'Anxiety',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontFamily: 'SourceSans',
-                    fontSize: 29.0,
+              Row(
+                children: [
+                  ElevatedButton(
+                    child: const Text(
+                      'Anxiety',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontFamily: 'SourceSans',
+                        fontSize: 29.0,
+                      ),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF78BA7D),
+                      minimumSize: const Size(250, 60),
+                      maximumSize: const Size(250, 60),
+                      elevation: 7.0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30.0),
+                      ),
+                    ),
+                    onPressed: () {},
                   ),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF78BA7D),
-                  minimumSize: const Size(300, 60),
-                  maximumSize: const Size(300, 60),
-                  elevation: 7.0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30.0),
+                  Switch.adaptive(
+                    value: isSwitchedA,
+                    onChanged: (newValue) {
+                      if (newValue == true) {
+                        showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return AlertDialog(
+                              title: Text("Add Event to Calendar"),
+                              content: Text(
+                                  "Would you like to add the events of the Anxiety calendar to your own?"),
+                              actions: [
+                                TextButton(
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
+                                  },
+                                  child: Text("No"),
+                                ),
+                                TextButton(
+                                  onPressed: () async {
+                                    setState(() {
+                                      isSwitchedA = newValue;
+                                    });
+                                    await updateAnxietyCalendar();
+                                    Navigator.of(context).pop();
+                                  },
+                                  child: Text("Yes"),
+                                ),
+                              ],
+                            );
+                          },
+                        );
+                      } else {}
+                    },
                   ),
-                ),
-                onPressed: () {},
+                ],
               ),
               Spacer(),
               ElevatedButton(
