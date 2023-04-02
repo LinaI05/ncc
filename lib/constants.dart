@@ -75,6 +75,12 @@ BubbleStyle greenHomeBubble = const BubbleStyle(
   alignment: Alignment.topLeft,
 );
 
+BubbleStyle shortHomeBubble = const BubbleStyle(
+  nip: BubbleNip.leftBottom,
+  color: Colors.grey,
+  alignment: Alignment.topLeft,
+);
+
 BubbleStyle redHomeBubble = const BubbleStyle(
   nip: BubbleNip.no,
   color: Colors.grey,

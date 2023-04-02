@@ -5,25 +5,40 @@ import 'package:ncc/login/sign_up.dart';
 import 'package:ncc/start_screen.dart';
 import 'package:ncc/appscreens/landing_page.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:ncc/authentication.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 Future main() async {
+  // init the hive
+  await Hive.initFlutter();
+
+  // open a box
+  var box = await Hive.openBox('mybox');
+
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({Key? key}) : super(key: key);
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      initialRoute: StartScreen.id,
-      routes: {
-        StartScreen.id: (context) => StartScreen(),
-        SignupScreen.id: (context) => SignupScreen(),
-        LoginScreen.id: (context) => LoginScreen(),
-        LandingPage.id: (context) => LandingPage(),
-        CheckinScreen.id: (context) => CheckinScreen(),
+    return ValueListenableBuilder<bool>(
+      valueListenable: AuthenticationStateChangeNotifier(),
+      builder: (context, isLoggedIn, _) {
+        final initialRoute = isLoggedIn ? CheckinScreen.id : StartScreen.id;
+        return MaterialApp(
+          debugShowCheckedModeBanner: false,
+          initialRoute: initialRoute,
+          routes: {
+            StartScreen.id: (context) => StartScreen(),
+            SignupScreen.id: (context) => const SignupScreen(),
+            LoginScreen.id: (context) => const LoginScreen(),
+            LandingPage.id: (context) => LandingPage(),
+            CheckinScreen.id: (context) => CheckinScreen(),
+          },
+        );
       },
     );
   }

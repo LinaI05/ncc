@@ -1,6 +1,6 @@
 import 'package:bubble/bubble.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:ncc/authentication.dart';
 import 'package:ncc/constants.dart';
 import 'package:ncc/helpers/achievements-helper.dart';
 import 'package:ncc/helpers/api-helper.dart';
@@ -8,10 +8,12 @@ import 'package:ncc/helpers/affirmations-helper.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:ncc/helpers/quote.dart';
+import 'package:flutter/material.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
-import '../helpers/goal.dart';
 import '../helpers/color-goals.dart';
-import '../helpers/goals-helper.dart';
 
 class homePage extends StatefulWidget {
   const homePage({Key? key}) : super(key: key);
@@ -52,9 +54,29 @@ Future<Quote> fetchQuote() async {
 }
 
 class _homePageState extends State<homePage> {
-  final todosList = ToDo.todoList();
-  List<ToDo> _foundToDo = [];
-  final _todoController = TextEditingController();
+  List<bool> checkboxValues = List<bool>.generate(10, (index) => false);
+
+  String input = "";
+
+  createTodos() {
+    DocumentReference documentReference =
+        FirebaseFirestore.instance.collection("MyTodos").doc(input);
+
+    //Map
+    Map<String, String> todos = {"todoTitle": input};
+    documentReference.set(todos).whenComplete(() {
+      print("$input created");
+    });
+  }
+
+  deleteTodos(item) {
+    DocumentReference documentReference =
+        FirebaseFirestore.instance.collection("MyTodos").doc(item);
+
+    documentReference.delete().whenComplete(() {
+      print("$item deleted");
+    });
+  }
 
   late Future<AffirmationsModel> _futureAffirmationsModel;
   late Future<Quote> quote;
@@ -66,7 +88,7 @@ class _homePageState extends State<homePage> {
 
   void initState() {
     super.initState();
-    _foundToDo = todosList;
+
     _futureJokesModel = fetchRandomJoke();
     _futureAffirmationsModel = fetchAffirmations();
     quote = fetchQuote();
@@ -95,97 +117,146 @@ class _homePageState extends State<homePage> {
               ),
               Column(
                 children: <Widget>[
-                  Bubble(
-                      elevation: 8.0,
-                      color: Color(0xFFA686C7),
-                      padding: BubbleEdges.all(10),
-                      style: greenHomeBubble,
-                      alignment: Alignment.topLeft,
-                      child: Text(
-                        'Short-term Goals',
-                        style: TextStyle(
-                          color: (Colors.white),
-                          fontFamily: 'SourceSans',
-                          fontSize: 20.0,
-                        ),
-                      )),
-                  const SizedBox(
-                    height: 20.0,
-                  ),
                   Row(children: [
-                    Expanded(
-                      child: Container(
-                        margin: EdgeInsets.only(
-                          bottom: 5,
-                          right: 20,
-                          left: 20,
-                        ),
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 0,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          boxShadow: const [
-                            BoxShadow(
-                              color: Colors.grey,
-                              offset: Offset(0.0, 0.0),
-                              blurRadius: 10.0,
-                              spreadRadius: 0.0,
-                            ),
-                          ],
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: TextField(
-                          controller: _todoController,
-                          decoration: InputDecoration(
-                              hintText: 'Add a new short-term goal',
-                              border: InputBorder.none),
-                        ),
-                      ),
+                    Bubble(
+                        elevation: 8.0,
+                        color: Color(0xFFA686C7),
+                        padding: BubbleEdges.all(12),
+                        style: shortHomeBubble,
+                        alignment: Alignment.center,
+                        child: Text(
+                          'Short-term Goals',
+                          style: TextStyle(
+                            color: (Colors.white),
+                            fontFamily: 'SourceSans',
+                            fontSize: 22.0,
+                          ),
+                        )),
+                    const SizedBox(
+                      width: 10.0,
                     ),
-                    Container(
-                      margin: EdgeInsets.only(
-                        bottom: 5,
-                        right: 20,
-                      ),
-                      child: ElevatedButton(
-                        child: Align(
-                          alignment: Alignment.center,
-                          child: Text(
-                            '+',
-                            style: TextStyle(
-                              fontSize: 32,
-                            ),
+                    ElevatedButton(
+                      child: Align(
+                        alignment: Alignment.center,
+                        child: Text(
+                          '+',
+                          style: TextStyle(
+                            color: (Colors.white),
+                            fontFamily: 'SourceSans',
+                            fontSize: 32,
                           ),
                         ),
-                        onPressed: () {
-                          _addToDoItem(_todoController.text);
-                        },
-                        style: ElevatedButton.styleFrom(
-                          primary: tdPurple,
-                          minimumSize: Size(40, 45),
-                          elevation: 10,
-                        ),
+                      ),
+                      onPressed: () {
+                        showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return AlertDialog(
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(16)),
+                                  title: Text("Add Short-term Goal"),
+                                  insetPadding: EdgeInsets.zero,
+                                  content: TextField(
+                                    decoration: InputDecoration(
+                                        border: OutlineInputBorder(
+                                            borderSide: BorderSide(
+                                                color: tdPurple, width: 5.0)),
+                                        enabledBorder: OutlineInputBorder(
+                                            borderSide:
+                                                BorderSide(color: tdPurple)),
+                                        focusedBorder: OutlineInputBorder(
+                                            borderSide:
+                                                BorderSide(color: tdPurple))),
+                                    onChanged: (String value) {
+                                      input = value;
+                                    },
+                                  ),
+                                  actions: <Widget>[
+                                    ElevatedButton(
+                                        style: ButtonStyle(
+                                            backgroundColor:
+                                                MaterialStateProperty.all(
+                                                    tdPurple)),
+                                        onPressed: () {
+                                          // setState((){
+                                          //   todos.add(input);
+                                          // });
+                                          createTodos();
+                                          Navigator.of(context)
+                                              .pop(); // closes the dialog
+                                        },
+                                        child: Text("Add"))
+                                  ]);
+                            });
+                      },
+                      style: ElevatedButton.styleFrom(
+                        primary: tdPurple,
+                        minimumSize: Size(40, 45),
+                        elevation: 8,
                       ),
                     ),
                   ]),
-                  Column(
-                    children: [
-                      SingleChildScrollView(
-                        child: ListView(
-                          shrinkWrap: true,
-                          children: [
-                            for (ToDo todoo in _foundToDo.reversed)
-                              ToDoItem(
-                                todo: todoo,
-                                onToDoChanged: _handleToDoChange,
-                                onDeleteItem: _deleteToDoItem,
-                              ),
-                          ],
-                        ),
-                      )
-                    ],
+                  StreamBuilder(
+                      stream: FirebaseFirestore.instance
+                          .collection("MyTodos")
+                          .snapshots(),
+                      builder:
+                          (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                        if (!snapshot.hasData) {
+                          return Center(child: Text('Loading'));
+                        }
+                        return StatefulBuilder(builder: (context, innerState) {
+                          return ListView.builder(
+                              shrinkWrap: true,
+                              itemCount: snapshot.data!.docs.length,
+                              itemBuilder: (context, index) {
+                                DocumentSnapshot documentSnapshot =
+                                    snapshot.data!.docs[index];
+                                return Dismissible(
+                                    onDismissed: (direction) {
+                                      deleteTodos(
+                                          documentSnapshot["todoTitle"]);
+                                    },
+                                    key: Key(documentSnapshot["todoTitle"]),
+                                    child: Card(
+                                        elevation: 4,
+                                        margin:
+                                            EdgeInsets.fromLTRB(2, 10, 17, 10),
+                                        shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(16)),
+                                        child: CheckboxListTile(
+                                            activeColor: tdPurple,
+                                            contentPadding:
+                                                EdgeInsets.fromLTRB(0, 7, 0, 7),
+                                            value: checkboxValues[index],
+                                            onChanged: (value) {
+                                              innerState(
+                                                () {
+                                                  checkboxValues[index] =
+                                                      value!;
+                                                },
+                                              );
+                                            },
+                                            title: Text(
+                                                documentSnapshot["todoTitle"]),
+                                            secondary: IconButton(
+                                              icon: Icon(
+                                                Icons.delete,
+                                                color: tdPurple,
+                                              ),
+                                              onPressed: () {
+                                                setState(() {
+                                                  deleteTodos(documentSnapshot[
+                                                      "todoTitle"]);
+                                                });
+                                              },
+                                            ))));
+                              });
+                        });
+                      }),
+                  const SizedBox(
+                    height: 17.0,
                   ),
                   Bubble(
                     elevation: 8.0,
@@ -329,27 +400,5 @@ class _homePageState extends State<homePage> {
         ),
       ),
     );
-  }
-
-  void _handleToDoChange(ToDo todo) {
-    setState(() {
-      todo.isDone = !todo.isDone;
-    });
-  }
-
-  void _deleteToDoItem(String id) {
-    setState(() {
-      todosList.removeWhere((item) => item.id == id);
-    });
-  }
-
-  void _addToDoItem(String toDo) {
-    setState(() {
-      todosList.add(ToDo(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
-        todoText: toDo,
-      ));
-    });
-    _todoController.clear();
   }
 }

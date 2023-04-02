@@ -36,18 +36,18 @@ class _CheckinScreenState extends State<CheckinScreen> {
             top: 60.0, left: 5.0, right: 5.0, bottom: 30.0),
         child: Column(
           children: <Widget>[
-            Align(
-              child: IconButton(
-                icon: const Icon(Icons.camera_alt),
-                onPressed: () {
-                  // pushNewScreenWithRouteSettings(
-                  //   context,
-                  //   screen: EmotionPage(),
-                  //   settings: RouteSettings(name: LandingPage.id),
-                  // );
-                },
-              ),
-            ),
+            // Align(
+            //   child: IconButton(
+            //     icon: const Icon(Icons.camera_alt),
+            //     onPressed: () {
+            //       // pushNewScreenWithRouteSettings(
+            //       //   context,
+            //       //   screen: EmotionPage(),
+            //       //   settings: RouteSettings(name: LandingPage.id),
+            //       // );
+            //     },
+            //   ),
+            // ),
             const Text(
               'What are you feeling today?',
               style: TextStyle(

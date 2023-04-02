@@ -22,7 +22,7 @@ class _LandingPageState extends State<LandingPage> {
       homePage(),
       ActivitiesPage(),
       copingCalendar(),
-      achievePage(),
+      //achievePage(),
       hotlinePage(),
       settingsPage(),
     ];
@@ -48,12 +48,12 @@ class _LandingPageState extends State<LandingPage> {
         activeColorPrimary: Color(0xFF115D6C),
         inactiveColorPrimary: Color(0xFF93D1DE),
       ),
-      PersistentBottomNavBarItem(
-        icon: Icon(Icons.emoji_events),
-        title: 'Achievements',
-        activeColorPrimary: Color(0xFF115D6C),
-        inactiveColorPrimary: Color(0xFF93D1DE),
-      ),
+      // PersistentBottomNavBarItem(
+      //   icon: Icon(Icons.emoji_events),
+      //   title: 'Achievements',
+      //   activeColorPrimary: Color(0xFF115D6C),
+      //   inactiveColorPrimary: Color(0xFF93D1DE),
+      // ),
       PersistentBottomNavBarItem(
         icon: Icon(Icons.phone),
         title: 'Hotlines',

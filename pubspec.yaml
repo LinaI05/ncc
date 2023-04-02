@@ -51,6 +51,9 @@ dependencies:
   loading_animation_widget: ^1.2.0+4
   syncfusion_flutter_calendar: ^20.4.42
   syncfusion_flutter_sliders: ^20.4.43
+  hive_flutter: ^1.1.0
+  flutter_slidable: ^2.0.0
+  cloud_firestore: ^4.4.5
 #  mojo_perception: ^2.0.0
 
 

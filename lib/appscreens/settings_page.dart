@@ -141,9 +141,12 @@ class _settingsPageState extends State<settingsPage> {
             //     ),
             //   ),
             // ),
+            const SizedBox(
+              height: 5,
+            ),
             SettingTile(
               titleText: 'Profile',
-              textSize: 30.0,
+              textSize: 27.0,
               tileColor: Color(0xFFA686C7),
               onTap: () {
                 pushNewScreenWithRouteSettings(context,
@@ -152,25 +155,27 @@ class _settingsPageState extends State<settingsPage> {
                     withNavBar: true);
               },
             ),
+            const SizedBox(
+              height: 5,
+            ),
             SettingTile(
               titleText: 'Delete my Account',
               textSize: 25.0,
               tileColor: Color(0xFF2FA9C0),
               onTap: () {
-                try {
-                  AuthenticationHelper().deleteUser();
-                } catch (e, s) {
-                  print(s);
-                }
+                AuthenticationHelper().deleteUser();
                 Navigator.of(context)
                     .maybePop(ModalRoute.withName('start_screen'));
                 pushNewScreen(context,
                     screen: StartScreen(), withNavBar: false);
               },
             ),
+            const SizedBox(
+              height: 5,
+            ),
             SettingTile(
               titleText: 'Log Out',
-              textSize: 30.0,
+              textSize: 27.0,
               tileColor: Color(0xFFCF726A),
               onTap: () {
                 AuthenticationHelper().signOut().then((error) {
@@ -183,6 +188,9 @@ class _settingsPageState extends State<settingsPage> {
                 });
               },
             ),
+            const SizedBox(
+              height: 5,
+            ),
             // SettingTile(
             //   titleText: 'Coping Plan',
             //   textSize: 30.0,
@@ -191,7 +199,7 @@ class _settingsPageState extends State<settingsPage> {
             // ),
             SettingTile(
               titleText: 'Additional Resources',
-              textSize: 25.0,
+              textSize: 23.5,
               tileColor: Color(0xFFF8B600),
               onTap: () async {
                 const url = 'https://www.novicc.org/';
@@ -232,7 +240,7 @@ class SettingTile extends StatelessWidget {
       ),
       visualDensity: VisualDensity(vertical: 4),
       dense: false,
-      trailing: Image.asset('assets/images/backButton.png'),
+      trailing: Image.asset('assets/images/smallBackButton.png'),
       onTap: onTap,
     );
   }

@@ -73,93 +73,95 @@ class _AudioClassState extends State<AudioClass> {
     return Scaffold(
       body: Padding(
         padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            // Align(
-            //   alignment: Alignment.topLeft,
-            //   child: IconButton(
-            //     onPressed: () {
-            //       // Navigator.of(context).popUntil((route) {
-            //       //   return route.settings.name == 'home_page';
-            //       // });
-            //       Navigator.of(context).pushNamedAndRemoveUntil(
-            //           LandingPage.id, (Route<dynamic> route) => false);
-            //       // pushNewScreen(context, screen: screen)
-            //     },
-            //     icon: Icon(Icons.arrow_back_ios),
-            //     iconSize: 40,
-            //   ),
-            // ),
-            SizedBox(
-              height: 20.0,
-            ),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(20),
-              child: Image.asset(
-                'assets/activities/${widget.toolNum + 1}.png',
-                width: double.infinity,
-                height: 350.0,
-                fit: BoxFit.cover,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              // Align(
+              //   alignment: Alignment.topLeft,
+              //   child: IconButton(
+              //     onPressed: () {
+              //       // Navigator.of(context).popUntil((route) {
+              //       //   return route.settings.name == 'home_page';
+              //       // });
+              //       Navigator.of(context).pushNamedAndRemoveUntil(
+              //           LandingPage.id, (Route<dynamic> route) => false);
+              //       // pushNewScreen(context, screen: screen)
+              //     },
+              //     icon: Icon(Icons.arrow_back_ios),
+              //     iconSize: 40,
+              //   ),
+              // ),
+              const SizedBox(
+                height: 20.0,
               ),
-            ),
-            const SizedBox(
-              height: 32.0,
-            ),
-            Text(
-              '$toolName',
-              style: TextStyle(
-                fontSize: 24.0,
-                fontFamily: 'SourceSans',
-              ),
-            ),
-            const SizedBox(
-              height: 4,
-            ),
-            const Text(
-              'Heartfulness Institute',
-              style: TextStyle(
-                fontSize: 20,
-              ),
-            ),
-            Slider(
-              min: 0,
-              max: duration.inSeconds.toDouble(),
-              value: position.inSeconds.toDouble(),
-              onChanged: (value) async {
-                final position = Duration(seconds: value.toInt());
-                await audioPlayer.seek(position);
-
-                await audioPlayer.resume();
-              },
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: <Widget>[
-                  Text(formatTime(position)),
-                  Text(formatTime(duration)),
-                ],
-              ),
-            ),
-            CircleAvatar(
-              radius: 35,
-              child: IconButton(
-                icon: Icon(
-                  isPlaying ? Icons.pause : Icons.play_arrow,
+              ClipRRect(
+                borderRadius: BorderRadius.circular(20),
+                child: Image.asset(
+                  'assets/activities/${widget.toolNum + 1}.png',
+                  width: double.infinity,
+                  height: 300.0,
+                  fit: BoxFit.cover,
                 ),
-                iconSize: 50,
-                onPressed: () async {
-                  if (isPlaying) {
-                    await audioPlayer.pause();
-                  } else {
-                    await audioPlayer.resume();
-                  }
+              ),
+              const SizedBox(
+                height: 32.0,
+              ),
+              Text(
+                '$toolName',
+                style: TextStyle(
+                  fontSize: 24.0,
+                  fontFamily: 'SourceSans',
+                ),
+              ),
+              const SizedBox(
+                height: 4,
+              ),
+              const Text(
+                'Heartfulness Institute',
+                style: TextStyle(
+                  fontSize: 20,
+                ),
+              ),
+              Slider(
+                min: 0,
+                max: duration.inSeconds.toDouble(),
+                value: position.inSeconds.toDouble(),
+                onChanged: (value) async {
+                  final position = Duration(seconds: value.toInt());
+                  await audioPlayer.seek(position);
+
+                  await audioPlayer.resume();
                 },
               ),
-            )
-          ],
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: <Widget>[
+                    Text(formatTime(position)),
+                    Text(formatTime(duration)),
+                  ],
+                ),
+              ),
+              CircleAvatar(
+                radius: 35,
+                child: IconButton(
+                  icon: Icon(
+                    isPlaying ? Icons.pause : Icons.play_arrow,
+                  ),
+                  iconSize: 50,
+                  onPressed: () async {
+                    if (isPlaying) {
+                      await audioPlayer.pause();
+                    } else {
+                      await audioPlayer.resume();
+                    }
+                  },
+                ),
+              )
+            ],
+          ),
         ),
       ),
     );

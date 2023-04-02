@@ -26,7 +26,7 @@ class ActivitiesPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Padding(
-        padding: const EdgeInsets.only(top: 75.0),
+        padding: const EdgeInsets.only(top: 50.0, right: 5, left: 5),
         child: Column(
           children: <Widget>[
             const Text(
@@ -37,20 +37,14 @@ class ActivitiesPage extends StatelessWidget {
                 fontSize: 35.0,
               ),
             ),
-            const Text(
-              '*Scroll Down for more*',
-              style: TextStyle(
-                color: Colors.black,
-                fontFamily: 'SourceSans',
-                fontSize: 15.0,
-              ),
-            ),
             Expanded(
               child: GridView.builder(
                 padding: EdgeInsets.zero,
                 itemCount: _count,
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2),
+                  crossAxisCount: 2,
+                  crossAxisSpacing: 2,
+                ),
                 itemBuilder: (_, i) {
                   return IconButton(
                     onPressed: () async {
@@ -108,7 +102,7 @@ class ActivitiesPage extends StatelessWidget {
                       }
                     },
                     icon: Image.asset('assets/activities/${i + 1}.png'),
-                    iconSize: 100.0,
+                    iconSize: 80.0,
                   );
                 },
               ),

@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:firebase_database/firebase_database.dart';
 
@@ -7,7 +8,7 @@ bool guestLogin = false;
 class AuthenticationHelper {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final GoogleSignIn _googleSignIn = GoogleSignIn();
-  get user => _auth.currentUser;
+  User? get user => _auth.currentUser;
 
   //SIGN UP METHOD
   Future signUp({required String email, required String password}) async {
@@ -24,8 +25,8 @@ class AuthenticationHelper {
 
   Future<bool> deleteUser() async {
     try {
-      user.delete();
-      final uid = user.uid;
+      user?.delete();
+      final uid = user?.uid;
       DatabaseReference ref = FirebaseDatabase.instance.ref("users/$uid");
       ref.remove();
       return true;
@@ -64,12 +65,38 @@ class AuthenticationHelper {
       await _auth.signInWithCredential(credential);
     } on FirebaseAuthException catch (e) {
       print(e.message);
-      throw e;
+      rethrow;
     }
+    return null;
   }
 
   Future<void> signOutFromGoogle() async {
     await _googleSignIn.signOut();
     await _auth.signOut();
+  }
+}
+
+class AuthenticationStateChangeNotifier extends ValueNotifier<bool> {
+  AuthenticationStateChangeNotifier() : super(false) {
+    _notifyUser(FirebaseAuth.instance.currentUser);
+    FirebaseAuth.instance.authStateChanges().listen(_notifyUser);
+  }
+
+  void _notifyUser(User? user) {
+    if (user == null) {
+      signOut();
+    } else {
+      signIn();
+    }
+  }
+
+  void signIn() {
+    value = true;
+    notifyListeners();
+  }
+
+  void signOut() {
+    value = false;
+    notifyListeners();
   }
 }
