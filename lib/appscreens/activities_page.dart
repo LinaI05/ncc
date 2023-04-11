@@ -37,6 +37,32 @@ class ActivitiesPage extends StatelessWidget {
                 fontSize: 35.0,
               ),
             ),
+            const SizedBox(
+              height: 5.0,
+            ),
+            const Center(
+              child: Text(
+                'Acknowledgement',
+                style: TextStyle(
+                  color: Colors.black,
+                  fontFamily: 'SourceSans',
+                  fontSize: 13.0,
+                ),
+              ),
+            ),
+            const SizedBox(
+              height: 2.0,
+            ),
+            const Center(
+              child: Text(
+                'Heartfulness Institute',
+                style: TextStyle(
+                  color: Colors.black,
+                  fontFamily: 'SourceSans',
+                  fontSize: 13.0,
+                ),
+              ),
+            ),
             Expanded(
               child: GridView.builder(
                 padding: EdgeInsets.zero,
@@ -106,6 +132,9 @@ class ActivitiesPage extends StatelessWidget {
                   );
                 },
               ),
+            ),
+            const SizedBox(
+              height: 15.0,
             ),
           ],
         ),

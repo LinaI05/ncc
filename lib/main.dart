@@ -6,15 +6,8 @@ import 'package:ncc/start_screen.dart';
 import 'package:ncc/appscreens/landing_page.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:ncc/authentication.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 
 Future main() async {
-  // init the hive
-  await Hive.initFlutter();
-
-  // open a box
-  var box = await Hive.openBox('mybox');
-
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
   runApp(const MyApp());

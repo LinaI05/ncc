@@ -1,12 +1,18 @@
+import 'dart:convert';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:ncc/appscreens/copingplans_page.dart';
 import 'package:persistent_bottom_nav_bar_v2/persistent-tab-view.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
 import 'package:ncc/helpers/achievements-helper.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 import '../authentication.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class copingCalendar extends StatefulWidget {
   const copingCalendar({Key? key}) : super(key: key);
@@ -16,18 +22,97 @@ class copingCalendar extends StatefulWidget {
   State<copingCalendar> createState() => _copingCalendarState();
 }
 
+class MyList {
+  static List<Meeting> meetings = <Meeting>[];
+
+  static const _kMeetingsKey = 'meetings';
+
+  static Future<void> loadMeetings() async {
+    final prefs = await SharedPreferences.getInstance();
+    final meetingsData = prefs.getString(_kMeetingsKey);
+    if (meetingsData != null) {
+      meetings = (json.decode(meetingsData) as List<dynamic>)
+          .map((e) => Meeting.fromJson(e as Map<String, dynamic>))
+          .toList();
+    }
+  }
+
+  static Future<void> saveMeetings() async {
+    final prefs = await SharedPreferences.getInstance();
+    final meetingsData = json.encode(meetings.map((e) => e.toJson()).toList());
+    await prefs.setString(_kMeetingsKey, meetingsData);
+  }
+}
+
 class _copingCalendarState extends State<copingCalendar> {
-  List<Meeting> meetings = <Meeting>[];
   MeetingDataSource? events;
-  Meeting? _selectedAppointment;
   bool eventsFetched = false;
+  int numDays = 31;
+
+  Future<void> scheduleNotifications() async {
+    final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+        FlutterLocalNotificationsPlugin();
+
+    const AndroidInitializationSettings initializationSettingsAndroid =
+        AndroidInitializationSettings('@mipmap/ic_launcher');
+
+    const IOSInitializationSettings initializationSettingsIOS =
+        IOSInitializationSettings();
+
+    const InitializationSettings initializationSettings =
+        InitializationSettings(
+            android: initializationSettingsAndroid,
+            iOS: initializationSettingsIOS);
+
+    await flutterLocalNotificationsPlugin.initialize(initializationSettings);
+
+    final List<Meeting> meetings = MyList.meetings;
+
+    for (Meeting meeting in meetings) {
+      if (DateTime.now().isBefore(meeting.from)) {
+        final String title = 'Visit ${meeting.eventName}!';
+        final String body =
+            'Remember to visit the activity for ${meeting.eventName} for your ${meeting.description}.';
+        final int id = meetings.indexOf(meeting);
+
+        const AndroidNotificationDetails androidPlatformChannelSpecifics =
+            AndroidNotificationDetails('1', 'Upcoming Meetings', 'Reminder',
+                importance: Importance.max,
+                priority: Priority.high,
+                ticker: 'ticker',
+                playSound: true,
+                enableVibration: true,
+                styleInformation: BigTextStyleInformation(''),
+                largeIcon: DrawableResourceAndroidBitmap('@mipmap/ic_launcher'),
+                color: Colors.blueAccent);
+
+        final IOSNotificationDetails iOSPlatformChannelSpecifics =
+            IOSNotificationDetails(presentSound: true);
+
+        final NotificationDetails platformChannelSpecifics =
+            NotificationDetails(
+                android: androidPlatformChannelSpecifics,
+                iOS: iOSPlatformChannelSpecifics);
+
+        await flutterLocalNotificationsPlugin.schedule(
+          id,
+          title,
+          body,
+          meeting.from,
+          platformChannelSpecifics,
+          androidAllowWhileIdle: true,
+        );
+      }
+    }
+  }
 
   @override
   void initState() {
-    _selectedAppointment = null;
-    meetings = <Meeting>[];
-    setEvents();
     super.initState();
+    MyList.loadMeetings();
+    MyList.meetings = <Meeting>[];
+    setEvents();
+    scheduleNotifications();
   }
 
   Future<void> setEvents() async {
@@ -46,8 +131,8 @@ class _copingCalendarState extends State<copingCalendar> {
             IconButton(
               onPressed: () {
                 pushNewScreenWithRouteSettings(context,
-                    settings: RouteSettings(name: 'copingPlans'),
-                    screen: copingPlansPage(),
+                    settings: const RouteSettings(name: 'copingPlans'),
+                    screen: const copingPlansPage(),
                     withNavBar: true);
               },
               icon: const Icon(
@@ -59,20 +144,6 @@ class _copingCalendarState extends State<copingCalendar> {
         ),
         body: Column(
           children: <Widget>[
-            Container(
-              height: 30,
-              child: TextButton(
-                child: const Text('Remove appointment'),
-                onPressed: () {
-                  if (_selectedAppointment != null) {
-                    events!.appointments.removeAt(
-                        events!.appointments.indexOf(_selectedAppointment));
-                    events!.notifyListeners(CalendarDataSourceAction.remove,
-                        <Meeting>[]..add(_selectedAppointment!));
-                  }
-                },
-              ),
-            ),
             Container(
               height: 500,
               child: SfCalendar(
@@ -119,518 +190,293 @@ class _copingCalendarState extends State<copingCalendar> {
     );
   }
 
+  bool eventsAddedD = false;
+  bool eventsAddedA = false;
+  bool eventsAddedP = false;
+  bool eventsAddedB = false;
+  bool eventsAddedO = false;
+
   Future<MeetingDataSource> _getCalendarDataSource() async {
-    final FirebaseAuth authD = FirebaseAuth.instance;
-    final refD = FirebaseDatabase.instance.ref();
-    final User? userD = authD.currentUser;
-    final uidD = userD?.uid;
-    final snapshotD = await refD.child('users/$uidD/depression-calendar').get();
-    final startDateD = await refD.child('users/$uidD/depression-sd').get();
+    final FirebaseAuth auth = FirebaseAuth.instance;
+    final ref = FirebaseDatabase.instance.ref();
+    final User? user = auth.currentUser;
+    final uid = user?.uid;
+    final snapshotD = await ref.child('users/$uid/depression-calendar').get();
+    final startDateD = await ref.child('users/$uid/depression-sd').get();
+    final snapshotA = await ref.child('users/$uid/anxiety-calendar').get();
+    final startDateA = await ref.child('users/$uid/anxiety-sd').get();
+    final snapshotP = await ref.child('users/$uid/ptsd-calendar').get();
+    final startDateP = await ref.child('users/$uid/ptsd-sd').get();
+    final snapshotB = await ref.child('users/$uid/bpd-calendar').get();
+    final startDateB = await ref.child('users/$uid/bpd-sd').get();
+    final snapshotO = await ref.child('users/$uid/ocd-calendar').get();
+    final startDateO = await ref.child('users/$uid/ocd-sd').get();
     if (snapshotD.exists) {
       if (snapshotD.value == true) {
-        addDepressionPlan(DateTime.parse(startDateD.value as String));
-      } else {}
+        if (!eventsAddedD) {
+          DateTime startDate = DateTime.parse(startDateD.value as String);
+          DateTime endDate = startDate.add(Duration(days: numDays - 1));
+          DateTime currentDate = DateTime.now();
+          eventsAddedD = true;
+          if (currentDate.isAfter(endDate)) {
+            showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return AlertDialog(
+                  title: Text('31-day depression coping plan completed'),
+                  content: Text(
+                      'Do you want to repeat the depression coping plan for the next 31 days?'),
+                  actions: <Widget>[
+                    TextButton(
+                      child: Text('No'),
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                    ),
+                    TextButton(
+                      child: Text('Yes'),
+                      onPressed: () async {
+                        await updateDepressionCalendar();
+                        Navigator.of(context).pop();
+                      },
+                    ),
+                  ],
+                );
+              },
+            );
+          }
+        }
+      } else if (snapshotD.value == false) {
+        if (eventsAddedD) {
+          deleteDepressionPlan();
+          eventsAddedD = false;
+        }
+      }
     } else {
-      print("error");
+      if (kDebugMode) {
+        print("error-D");
+      }
     }
-
-    final FirebaseAuth authA = FirebaseAuth.instance;
-    final refA = FirebaseDatabase.instance.ref();
-    final User? userA = authA.currentUser;
-    final uidA = userA?.uid;
-    final snapshotA = await refA.child('users/$uidA/anxiety-calendar').get();
-    final startDateA = await refA.child('users/$uidA/anxiety-sd').get();
     if (snapshotA.exists) {
       if (snapshotA.value == true) {
-        addAnxietyPlan(DateTime.parse(startDateA.value as String));
-      } else {}
+        if (!eventsAddedA) {
+          DateTime startDate = DateTime.parse(startDateA.value as String);
+          DateTime endDate = startDate.add(Duration(days: numDays - 1));
+          DateTime currentDate = DateTime.now();
+          eventsAddedA = true;
+          if (currentDate.isAfter(endDate)) {
+            showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return AlertDialog(
+                  title: Text('31-day anxiety coping plan completed'),
+                  content: Text(
+                      'Do you want to repeat the anxiety coping plan for the next 31 days?'),
+                  actions: <Widget>[
+                    TextButton(
+                      child: Text('No'),
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                    ),
+                    TextButton(
+                      child: Text('Yes'),
+                      onPressed: () async {
+                        await updateAnxietyCalendar();
+                        Navigator.of(context).pop();
+                      },
+                    ),
+                  ],
+                );
+              },
+            );
+          }
+        }
+      } else if (snapshotA.value == false) {
+        if (eventsAddedA) {
+          deleteAnxietyPlan();
+          eventsAddedA = false;
+        }
+      }
     } else {
-      print("error");
+      if (kDebugMode) {
+        print("error-A");
+      }
     }
-
-    return MeetingDataSource(meetings);
+    if (snapshotP.exists) {
+      if (snapshotP.value == true) {
+        if (!eventsAddedP) {
+          DateTime startDate = DateTime.parse(startDateP.value as String);
+          DateTime endDate = startDate.add(Duration(days: numDays - 1));
+          DateTime currentDate = DateTime.now();
+          eventsAddedP = true;
+          if (currentDate.isAfter(endDate)) {
+            showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return AlertDialog(
+                  title: Text('31-day PTSD coping plan completed'),
+                  content: Text(
+                      'Do you want to repeat the PTSD coping plan for the next 31 days?'),
+                  actions: <Widget>[
+                    TextButton(
+                      child: Text('No'),
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                    ),
+                    TextButton(
+                      child: Text('Yes'),
+                      onPressed: () async {
+                        await updatePTSDCalendar();
+                        Navigator.of(context).pop();
+                      },
+                    ),
+                  ],
+                );
+              },
+            );
+          }
+        }
+      } else if (snapshotP.value == false) {
+        if (eventsAddedP) {
+          deletePTSDPlan();
+          eventsAddedP = false;
+        }
+      }
+    } else {
+      if (kDebugMode) {
+        print("error-P");
+      }
+    }
+    if (snapshotB.exists) {
+      if (snapshotB.value == true) {
+        if (!eventsAddedB) {
+          DateTime startDate = DateTime.parse(startDateB.value as String);
+          DateTime endDate = startDate.add(Duration(days: numDays - 1));
+          DateTime currentDate = DateTime.now();
+          eventsAddedB = true;
+          if (currentDate.isAfter(endDate)) {
+            showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return AlertDialog(
+                  title: Text('31-day BPD coping plan completed'),
+                  content: Text(
+                      'Do you want to repeat the BPD coping plan for the next 31 days?'),
+                  actions: <Widget>[
+                    TextButton(
+                      child: Text('No'),
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                    ),
+                    TextButton(
+                      child: Text('Yes'),
+                      onPressed: () async {
+                        await updateBPDCalendar();
+                        Navigator.of(context).pop();
+                      },
+                    ),
+                  ],
+                );
+              },
+            );
+          }
+        }
+      } else if (snapshotB.value == false) {
+        if (eventsAddedB) {
+          deleteBPDPlan();
+          eventsAddedB = false;
+        }
+      }
+    } else {
+      if (kDebugMode) {
+        print("error-B");
+      }
+    }
+    if (snapshotO.exists) {
+      if (snapshotO.value == true) {
+        if (!eventsAddedO) {
+          DateTime startDate = DateTime.parse(startDateO.value as String);
+          DateTime endDate = startDate.add(Duration(days: numDays - 1));
+          DateTime currentDate = DateTime.now();
+          eventsAddedO = true;
+          if (currentDate.isAfter(endDate)) {
+            showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return AlertDialog(
+                  title: Text('31-day OCD coping plan completed'),
+                  content: Text(
+                      'Do you want to repeat the OCD coping plan for the next 31 days?'),
+                  actions: <Widget>[
+                    TextButton(
+                      child: Text('No'),
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                    ),
+                    TextButton(
+                      child: Text('Yes'),
+                      onPressed: () async {
+                        await updateOCDCalendar();
+                        Navigator.of(context).pop();
+                      },
+                    ),
+                  ],
+                );
+              },
+            );
+          }
+        }
+      } else if (snapshotO.value == false) {
+        if (eventsAddedO) {
+          deleteOCDPlan();
+          eventsAddedO = false;
+        }
+      }
+    } else {
+      if (kDebugMode) {
+        print("error-O");
+      }
+    }
+    return MeetingDataSource(MyList.meetings);
   }
 
-  void addDepressionPlan(startDate) {
-    if (meetings.isEmpty) {
-      meetings.add(Meeting(
-        from: startDate,
-        to: startDate.add(const Duration(hours: 1)),
-        eventName: '-Guided PEMS, Journal',
-        background: Colors.pink,
-        isAllDay: true,
-        description: "Day 1",
-      ));
-      meetings.add(Meeting(
-        from: startDate.add(Duration(days: 1)),
-        to: startDate.add(const Duration(days: 1, hours: 1)),
-        eventName: '-Breathing with Purpose',
-        background: Colors.pink,
-        isAllDay: true,
-        description: "Day 2",
-      ));
-      meetings.add(Meeting(
-        from: startDate.add(Duration(days: 2)),
-        to: startDate.add(const Duration(days: 2, hours: 1)),
-        eventName: '-Guided Relaxation, Journal',
-        background: Colors.pink,
-        isAllDay: true,
-        description: "Day 3",
-      ));
-      meetings.add(Meeting(
-        from: startDate.add(Duration(days: 3)),
-        to: startDate.add(const Duration(days: 3, hours: 1)),
-        eventName: 'Guided Rejuvanation',
-        background: Colors.pink,
-        isAllDay: true,
-        description: "Day 4",
-      ));
-      meetings.add(Meeting(
-        from: startDate.add(Duration(days: 4)),
-        to: startDate.add(const Duration(days: 4, hours: 1)),
-        eventName: '-Journal',
-        background: Colors.pink,
-        isAllDay: true,
-        description: "Day 5",
-      ));
-      meetings.add(Meeting(
-        from: startDate.add(Duration(days: 5)),
-        to: startDate.add(const Duration(days: 5, hours: 1)),
-        eventName: '-Cute Images',
-        background: Colors.pink,
-        isAllDay: true,
-        description: "Day 6",
-      ));
-      meetings.add(Meeting(
-        from: startDate.add(Duration(days: 6)),
-        to: startDate.add(const Duration(days: 6, hours: 1)),
-        eventName: '-Journal',
-        background: Colors.pink,
-        isAllDay: true,
-        description: "Day 7",
-      ));
-      meetings.add(Meeting(
-        from: startDate.add(Duration(days: 8)),
-        to: startDate.add(const Duration(days: 8, hours: 1)),
-        eventName: '-Guided PEMS',
-        background: Colors.pink,
-        isAllDay: true,
-        description: "Day 8",
-      ));
-      meetings.add(Meeting(
-        from: startDate.add(Duration(days: 9)),
-        to: startDate.add(const Duration(days: 9, hours: 1)),
-        eventName: '-Guided Rejuvanation',
-        background: Colors.pink,
-        isAllDay: true,
-        description: "Day 9",
-      ));
-      meetings.add(Meeting(
-        from: startDate.add(Duration(days: 10)),
-        to: startDate.add(const Duration(days: 10, hours: 1)),
-        eventName: '-Journal',
-        background: Colors.pink,
-        isAllDay: true,
-        description: "Day 10",
-      ));
-      meetings.add(Meeting(
-        from: startDate.add(Duration(days: 11)),
-        to: startDate.add(const Duration(days: 11, hours: 1)),
-        eventName: '-Cute Images',
-        background: Colors.pink,
-        isAllDay: true,
-        description: "Day 11",
-      ));
-      meetings.add(Meeting(
-        from: startDate.add(Duration(days: 12)),
-        to: startDate.add(const Duration(days: 12, hours: 1)),
-        eventName: '-Guided Relaxation, Journal',
-        background: Colors.pink,
-        isAllDay: true,
-        description: "Day 12",
-      ));
-      meetings.add(Meeting(
-        from: startDate.add(Duration(days: 13)),
-        to: startDate.add(const Duration(days: 13, hours: 1)),
-        eventName: '-Breathing with purpose',
-        background: Colors.pink,
-        isAllDay: true,
-        description: "Day 13",
-      ));
-      meetings.add(Meeting(
-        from: startDate.add(Duration(days: 14)),
-        to: startDate.add(const Duration(days: 14, hours: 1)),
-        eventName: '-Journal',
-        background: Colors.pink,
-        isAllDay: true,
-        description: "Day 14",
-      ));
-      meetings.add(Meeting(
-        from: startDate.add(Duration(days: 15)),
-        to: startDate.add(const Duration(days: 15, hours: 1)),
-        eventName: '-Guided PEMS, Guided Affirmations',
-        background: Colors.pink,
-        isAllDay: true,
-        description: "Day 15",
-      ));
-      meetings.add(Meeting(
-        from: startDate.add(Duration(days: 16)),
-        to: startDate.add(const Duration(days: 16, hours: 1)),
-        eventName: '-Journal',
-        background: Colors.pink,
-        isAllDay: true,
-        description: "Day 16",
-      ));
-      meetings.add(Meeting(
-        from: startDate.add(Duration(days: 17)),
-        to: startDate.add(const Duration(days: 17, hours: 1)),
-        eventName: '-Cute Images',
-        background: Colors.pink,
-        isAllDay: true,
-        description: "Day 17",
-      ));
-      meetings.add(Meeting(
-        from: startDate.add(Duration(days: 18)),
-        to: startDate.add(const Duration(days: 18, hours: 1)),
-        eventName: '-Guided Relaxation, Journal',
-        background: Colors.pink,
-        isAllDay: true,
-        description: "Day 18",
-      ));
-      meetings.add(Meeting(
-        from: startDate.add(Duration(days: 19)),
-        to: startDate.add(const Duration(days: 19, hours: 1)),
-        eventName: '-Guided Rejuvanation',
-        background: Colors.pink,
-        isAllDay: true,
-        description: "Day 19",
-      ));
-      meetings.add(Meeting(
-        from: startDate.add(Duration(days: 20)),
-        to: startDate.add(const Duration(days: 20, hours: 1)),
-        eventName: '-Journal',
-        background: Colors.pink,
-        isAllDay: true,
-        description: "Day 20",
-      ));
-      meetings.add(Meeting(
-        from: startDate.add(Duration(days: 21)),
-        to: startDate.add(const Duration(days: 21, hours: 1)),
-        eventName: '-Guided Affirmations',
-        background: Colors.pink,
-        isAllDay: true,
-        description: "Day 21",
-      ));
-      meetings.add(Meeting(
-        from: startDate.add(Duration(days: 22)),
-        to: startDate.add(const Duration(days: 22, hours: 1)),
-        eventName: '-Guided PEMS, Journal',
-        background: Colors.pink,
-        isAllDay: true,
-        description: "Day 22",
-      ));
-      meetings.add(Meeting(
-        from: startDate.add(Duration(days: 23)),
-        to: startDate.add(const Duration(days: 23, hours: 1)),
-        eventName: '-Breathing with Purpose',
-        background: Colors.pink,
-        isAllDay: true,
-        description: "Day 23",
-      ));
-      meetings.add(Meeting(
-        from: startDate.add(Duration(days: 24)),
-        to: startDate.add(const Duration(days: 24, hours: 1)),
-        eventName: '-Guided Affirmations, Journal',
-        background: Colors.pink,
-        isAllDay: true,
-        description: "Day 24",
-      ));
-      meetings.add(Meeting(
-        from: startDate.add(Duration(days: 25)),
-        to: startDate.add(const Duration(days: 25, hours: 1)),
-        eventName: '-Cute Images',
-        background: Colors.pink,
-        isAllDay: true,
-        description: "Day 25",
-      ));
-      meetings.add(Meeting(
-        from: startDate.add(Duration(days: 26)),
-        to: startDate.add(const Duration(days: 26, hours: 1)),
-        eventName: '-Breathing with Purpose, Journal',
-        background: Colors.pink,
-        isAllDay: true,
-        description: "Day 26",
-      ));
-      meetings.add(Meeting(
-        from: startDate.add(Duration(days: 28)),
-        to: startDate.add(const Duration(days: 28, hours: 1)),
-        eventName: '-Journal',
-        background: Colors.pink,
-        isAllDay: true,
-        description: "Day 28",
-      ));
-      meetings.add(Meeting(
-        from: startDate.add(Duration(days: 29)),
-        to: startDate.add(const Duration(days: 29, hours: 1)),
-        eventName: '-Guided PEMS',
-        background: Colors.pink,
-        isAllDay: true,
-        description: "Day 29",
-      ));
-      meetings.add(Meeting(
-        from: startDate.add(Duration(days: 30)),
-        to: startDate.add(const Duration(days: 30, hours: 1)),
-        eventName: '-Guided Rejuvanation, Journal',
-        background: Colors.pink,
-        isAllDay: true,
-        description: "Day 30",
-      ));
-    }
+  void deleteDepressionPlan() {
+    MyList.meetings.removeWhere(
+        (meeting) => meeting.description == 'Depression Coping Plan');
+    MyList.saveMeetings();
   }
 
-  void addAnxietyPlan(startDate) {
-    if (meetings.isEmpty) {
-      meetings.add(Meeting(
-        from: startDate,
-        to: startDate.add(const Duration(hours: 1)),
-        eventName: '-a',
-        background: Colors.pink,
-        isAllDay: true,
-        description: "Day 1",
-      ));
-      meetings.add(Meeting(
-        from: startDate.add(Duration(days: 1)),
-        to: startDate.add(const Duration(days: 1, hours: 1)),
-        eventName: '-b',
-        background: Colors.pink,
-        isAllDay: true,
-        description: "Day 2",
-      ));
-      meetings.add(Meeting(
-        from: startDate.add(Duration(days: 2)),
-        to: startDate.add(const Duration(days: 2, hours: 1)),
-        eventName: '-c',
-        background: Colors.pink,
-        isAllDay: true,
-        description: "Day 3",
-      ));
-      meetings.add(Meeting(
-        from: startDate.add(Duration(days: 3)),
-        to: startDate.add(const Duration(days: 3, hours: 1)),
-        eventName: 'd',
-        background: Colors.pink,
-        isAllDay: true,
-        description: "Day 4",
-      ));
-      meetings.add(Meeting(
-        from: startDate.add(Duration(days: 4)),
-        to: startDate.add(const Duration(days: 4, hours: 1)),
-        eventName: 'e',
-        background: Colors.pink,
-        isAllDay: true,
-        description: "Day 5",
-      ));
-      meetings.add(Meeting(
-        from: startDate.add(Duration(days: 5)),
-        to: startDate.add(const Duration(days: 5, hours: 1)),
-        eventName: 'f',
-        background: Colors.pink,
-        isAllDay: true,
-        description: "Day 6",
-      ));
-      meetings.add(Meeting(
-        from: startDate.add(Duration(days: 6)),
-        to: startDate.add(const Duration(days: 6, hours: 1)),
-        eventName: 'g',
-        background: Colors.pink,
-        isAllDay: true,
-        description: "Day 7",
-      ));
-      meetings.add(Meeting(
-        from: startDate.add(Duration(days: 8)),
-        to: startDate.add(const Duration(days: 8, hours: 1)),
-        eventName: 'h',
-        background: Colors.pink,
-        isAllDay: true,
-        description: "Day 8",
-      ));
-      meetings.add(Meeting(
-        from: startDate.add(Duration(days: 9)),
-        to: startDate.add(const Duration(days: 9, hours: 1)),
-        eventName: 'i',
-        background: Colors.pink,
-        isAllDay: true,
-        description: "Day 9",
-      ));
-      meetings.add(Meeting(
-        from: startDate.add(Duration(days: 10)),
-        to: startDate.add(const Duration(days: 10, hours: 1)),
-        eventName: 'j',
-        background: Colors.pink,
-        isAllDay: true,
-        description: "Day 10",
-      ));
-      meetings.add(Meeting(
-        from: startDate.add(Duration(days: 11)),
-        to: startDate.add(const Duration(days: 11, hours: 1)),
-        eventName: 'k',
-        background: Colors.pink,
-        isAllDay: true,
-        description: "Day 11",
-      ));
-      meetings.add(Meeting(
-        from: startDate.add(Duration(days: 12)),
-        to: startDate.add(const Duration(days: 12, hours: 1)),
-        eventName: 'l',
-        background: Colors.pink,
-        isAllDay: true,
-        description: "Day 12",
-      ));
-      meetings.add(Meeting(
-        from: startDate.add(Duration(days: 13)),
-        to: startDate.add(const Duration(days: 13, hours: 1)),
-        eventName: 'm',
-        background: Colors.pink,
-        isAllDay: true,
-        description: "Day 13",
-      ));
-      meetings.add(Meeting(
-        from: startDate.add(Duration(days: 14)),
-        to: startDate.add(const Duration(days: 14, hours: 1)),
-        eventName: 'n',
-        background: Colors.pink,
-        isAllDay: true,
-        description: "Day 14",
-      ));
-      meetings.add(Meeting(
-        from: startDate.add(Duration(days: 15)),
-        to: startDate.add(const Duration(days: 15, hours: 1)),
-        eventName: 'o',
-        background: Colors.pink,
-        isAllDay: true,
-        description: "Day 15",
-      ));
-      meetings.add(Meeting(
-        from: startDate.add(Duration(days: 16)),
-        to: startDate.add(const Duration(days: 16, hours: 1)),
-        eventName: 'p',
-        background: Colors.pink,
-        isAllDay: true,
-        description: "Day 16",
-      ));
-      meetings.add(Meeting(
-        from: startDate.add(Duration(days: 17)),
-        to: startDate.add(const Duration(days: 17, hours: 1)),
-        eventName: 'q',
-        background: Colors.pink,
-        isAllDay: true,
-        description: "Day 17",
-      ));
-      meetings.add(Meeting(
-        from: startDate.add(Duration(days: 18)),
-        to: startDate.add(const Duration(days: 18, hours: 1)),
-        eventName: 'r',
-        background: Colors.pink,
-        isAllDay: true,
-        description: "Day 18",
-      ));
-      meetings.add(Meeting(
-        from: startDate.add(Duration(days: 19)),
-        to: startDate.add(const Duration(days: 19, hours: 1)),
-        eventName: 's',
-        background: Colors.pink,
-        isAllDay: true,
-        description: "Day 19",
-      ));
-      meetings.add(Meeting(
-        from: startDate.add(Duration(days: 20)),
-        to: startDate.add(const Duration(days: 20, hours: 1)),
-        eventName: 't',
-        background: Colors.pink,
-        isAllDay: true,
-        description: "Day 20",
-      ));
-      meetings.add(Meeting(
-        from: startDate.add(Duration(days: 21)),
-        to: startDate.add(const Duration(days: 21, hours: 1)),
-        eventName: 'u',
-        background: Colors.pink,
-        isAllDay: true,
-        description: "Day 21",
-      ));
-      meetings.add(Meeting(
-        from: startDate.add(Duration(days: 22)),
-        to: startDate.add(const Duration(days: 22, hours: 1)),
-        eventName: 'v',
-        background: Colors.pink,
-        isAllDay: true,
-        description: "Day 22",
-      ));
-      meetings.add(Meeting(
-        from: startDate.add(Duration(days: 23)),
-        to: startDate.add(const Duration(days: 23, hours: 1)),
-        eventName: 'w',
-        background: Colors.pink,
-        isAllDay: true,
-        description: "Day 23",
-      ));
-      meetings.add(Meeting(
-        from: startDate.add(Duration(days: 24)),
-        to: startDate.add(const Duration(days: 24, hours: 1)),
-        eventName: 'x',
-        background: Colors.pink,
-        isAllDay: true,
-        description: "Day 24",
-      ));
-      meetings.add(Meeting(
-        from: startDate.add(Duration(days: 25)),
-        to: startDate.add(const Duration(days: 25, hours: 1)),
-        eventName: 'y',
-        background: Colors.pink,
-        isAllDay: true,
-        description: "Day 25",
-      ));
-      meetings.add(Meeting(
-        from: startDate.add(Duration(days: 26)),
-        to: startDate.add(const Duration(days: 26, hours: 1)),
-        eventName: 'z',
-        background: Colors.pink,
-        isAllDay: true,
-        description: "Day 26",
-      ));
-      meetings.add(Meeting(
-        from: startDate.add(Duration(days: 28)),
-        to: startDate.add(const Duration(days: 28, hours: 1)),
-        eventName: 'a1',
-        background: Colors.pink,
-        isAllDay: true,
-        description: "Day 28",
-      ));
-      meetings.add(Meeting(
-        from: startDate.add(Duration(days: 29)),
-        to: startDate.add(const Duration(days: 29, hours: 1)),
-        eventName: 'b1',
-        background: Colors.pink,
-        isAllDay: true,
-        description: "Day 29",
-      ));
-      meetings.add(Meeting(
-        from: startDate.add(Duration(days: 30)),
-        to: startDate.add(const Duration(days: 30, hours: 1)),
-        eventName: 'c1',
-        background: Colors.pink,
-        isAllDay: true,
-        description: "Day 30",
-      ));
-    }
+  void deleteAnxietyPlan() {
+    MyList.meetings
+        .removeWhere((meeting) => meeting.description == 'Anxiety Coping Plan');
+    MyList.saveMeetings();
+  }
+
+  void deletePTSDPlan() {
+    MyList.meetings
+        .removeWhere((meeting) => meeting.description == 'PTSD Coping Plan');
+    MyList.saveMeetings();
+  }
+
+  void deleteBPDPlan() {
+    MyList.meetings
+        .removeWhere((meeting) => meeting.description == 'BPD Coping Plan');
+    MyList.saveMeetings();
+  }
+
+  void deleteOCDPlan() {
+    MyList.meetings
+        .removeWhere((meeting) => meeting.description == 'OCD Coping Plan');
+    MyList.saveMeetings();
   }
 
   void calendarTapped(CalendarTapDetails calendarTapDetails) {
     if (calendarTapDetails.targetElement == CalendarElement.agenda ||
-        calendarTapDetails.targetElement == CalendarElement.appointment) {
-      final Meeting appointment = calendarTapDetails.appointments![0];
-      _selectedAppointment = appointment;
-    }
+        calendarTapDetails.targetElement == CalendarElement.appointment) {}
   }
 }
 
@@ -697,4 +543,30 @@ class Meeting {
   final String startTimeZone;
   final String endTimeZone;
   final String description;
+
+  Map<String, dynamic> toJson() {
+    return {
+      'eventName': eventName,
+      'from': from.toIso8601String(),
+      'to': to.toIso8601String(),
+      'background': background.value,
+      'isAllDay': isAllDay,
+      'startTimeZone': startTimeZone,
+      'endTimeZone': endTimeZone,
+      'description': description,
+    };
+  }
+
+  factory Meeting.fromJson(Map<String, dynamic> json) {
+    return Meeting(
+      eventName: json['eventName'] ?? '',
+      from: DateTime.parse(json['from']),
+      to: DateTime.parse(json['to']),
+      background: Color(json['background']),
+      isAllDay: json['isAllDay'] ?? false,
+      startTimeZone: json['startTimeZone'] ?? '',
+      endTimeZone: json['endTimeZone'] ?? '',
+      description: json['description'] ?? '',
+    );
+  }
 }

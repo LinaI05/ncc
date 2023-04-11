@@ -4,16 +4,22 @@ import 'dart:math';
 import 'package:date_format/date_format.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:persistent_bottom_nav_bar_v2/persistent-tab-view.dart';
+
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../appscreens/landing_page.dart';
 import 'Note.dart';
 
 class JournalPage extends StatefulWidget {
+
   @override
   _JournalPageState createState() => _JournalPageState();
 }
 
 class _JournalPageState extends State<JournalPage> {
+  PersistentTabController? _tabController;
+
   late String greeting;
   List<Note> notes = [];
   int currentNoteIndex = 0;

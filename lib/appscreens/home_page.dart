@@ -9,10 +9,11 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:ncc/helpers/quote.dart';
 import 'package:flutter/material.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
+import '../authentication.dart';
 import '../helpers/color-goals.dart';
 
 class homePage extends StatefulWidget {
@@ -54,7 +55,8 @@ Future<Quote> fetchQuote() async {
 }
 
 class _homePageState extends State<homePage> {
-  List<bool> checkboxValues = List<bool>.generate(10, (index) => false);
+  Map<String, bool> checkboxValues = {};
+  late SharedPreferences prefs;
 
   String input = "";
 
@@ -63,7 +65,11 @@ class _homePageState extends State<homePage> {
         FirebaseFirestore.instance.collection("MyTodos").doc(input);
 
     //Map
-    Map<String, String> todos = {"todoTitle": input};
+    Map<String, dynamic> todos = {
+      "todoTitle": input,
+      "timestamp": DateTime.now()
+    };
+
     documentReference.set(todos).whenComplete(() {
       print("$input created");
     });
@@ -88,10 +94,29 @@ class _homePageState extends State<homePage> {
 
   void initState() {
     super.initState();
+    initPrefs();
 
     _futureJokesModel = fetchRandomJoke();
     _futureAffirmationsModel = fetchAffirmations();
     quote = fetchQuote();
+  }
+
+  void initPrefs() async {
+    prefs = await SharedPreferences.getInstance();
+    setState(() {
+      // initialize checkbox values from saved prefs
+      checkboxValues = Map<String, bool>.from(
+        prefs.getString("checkboxValues") != null
+            ? Map<String, dynamic>.from(
+                json.decode(prefs.getString("checkboxValues")!))
+            : {},
+      );
+    });
+  }
+
+  void savePrefs() {
+    // save checkbox values to prefs
+    prefs.setString("checkboxValues", json.encode(checkboxValues));
   }
 
   @override
@@ -197,64 +222,89 @@ class _homePageState extends State<homePage> {
                     ),
                   ]),
                   StreamBuilder(
-                      stream: FirebaseFirestore.instance
-                          .collection("MyTodos")
-                          .snapshots(),
-                      builder:
-                          (context, AsyncSnapshot<QuerySnapshot> snapshot) {
-                        if (!snapshot.hasData) {
-                          return Center(child: Text('Loading'));
-                        }
-                        return StatefulBuilder(builder: (context, innerState) {
-                          return ListView.builder(
-                              shrinkWrap: true,
-                              itemCount: snapshot.data!.docs.length,
-                              itemBuilder: (context, index) {
-                                DocumentSnapshot documentSnapshot =
-                                    snapshot.data!.docs[index];
-                                return Dismissible(
-                                    onDismissed: (direction) {
-                                      deleteTodos(
-                                          documentSnapshot["todoTitle"]);
+                    stream: FirebaseFirestore.instance
+                        .collection("MyTodos")
+                        .orderBy("timestamp", descending: false)
+                        .snapshots(),
+                    builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                      if (guestLogin) {
+                        return const Center(
+                            child: Text(
+                                'Please login to access Short-term Goals'));
+                      }
+                      if (!snapshot.hasData) {
+                        return const Center(child: Text('Loading'));
+                      }
+                      final reversedList = snapshot.data!.docs.reversed
+                          .toList(); // reverse the list
+                      return StatefulBuilder(builder: (context, innerState) {
+                        return ListView.builder(
+                          shrinkWrap: true,
+                          itemCount: reversedList.length,
+                          itemBuilder: (context, index) {
+                            DocumentSnapshot documentSnapshot =
+                                reversedList[index];
+                            final todoTitle = documentSnapshot["todoTitle"];
+                            if (!checkboxValues.containsKey(todoTitle)) {
+                              checkboxValues[todoTitle] =
+                                  false; // initialize checkbox value to false
+                            }
+                            final textDecoration = checkboxValues[todoTitle]!
+                                ? TextDecoration.lineThrough
+                                : TextDecoration.none;
+                            return Dismissible(
+                              onDismissed: (direction) {
+                                setState(() {
+                                  deleteTodos(todoTitle);
+                                  checkboxValues.remove(
+                                      todoTitle); // remove checkbox value from map
+                                  savePrefs(); // save checkbox values to prefs after deletion
+                                });
+                              },
+                              key: Key(todoTitle),
+                              child: Card(
+                                elevation: 4,
+                                margin: EdgeInsets.fromLTRB(2, 10, 17, 10),
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(16)),
+                                child: CheckboxListTile(
+                                  activeColor: tdPurple,
+                                  contentPadding:
+                                      EdgeInsets.fromLTRB(0, 7, 0, 7),
+                                  value: checkboxValues[
+                                      todoTitle], // use map to get checkbox value
+                                  onChanged: (value) {
+                                    setState(() {
+                                      checkboxValues[todoTitle] =
+                                          value!; // update checkbox value in map
+                                      savePrefs();
+                                    });
+                                  },
+                                  title: Text(
+                                    todoTitle,
+                                    style:
+                                        TextStyle(decoration: textDecoration),
+                                  ),
+                                  secondary: IconButton(
+                                    icon: const Icon(Icons.delete,
+                                        color: tdPurple),
+                                    onPressed: () {
+                                      setState(() {
+                                        deleteTodos(todoTitle);
+                                        checkboxValues.remove(
+                                            todoTitle); // remove checkbox value from map
+                                        savePrefs(); // save checkbox values to prefs after deletion
+                                      });
                                     },
-                                    key: Key(documentSnapshot["todoTitle"]),
-                                    child: Card(
-                                        elevation: 4,
-                                        margin:
-                                            EdgeInsets.fromLTRB(2, 10, 17, 10),
-                                        shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(16)),
-                                        child: CheckboxListTile(
-                                            activeColor: tdPurple,
-                                            contentPadding:
-                                                EdgeInsets.fromLTRB(0, 7, 0, 7),
-                                            value: checkboxValues[index],
-                                            onChanged: (value) {
-                                              innerState(
-                                                () {
-                                                  checkboxValues[index] =
-                                                      value!;
-                                                },
-                                              );
-                                            },
-                                            title: Text(
-                                                documentSnapshot["todoTitle"]),
-                                            secondary: IconButton(
-                                              icon: Icon(
-                                                Icons.delete,
-                                                color: tdPurple,
-                                              ),
-                                              onPressed: () {
-                                                setState(() {
-                                                  deleteTodos(documentSnapshot[
-                                                      "todoTitle"]);
-                                                });
-                                              },
-                                            ))));
-                              });
-                        });
-                      }),
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                        );
+                      });
+                    },
+                  ),
                   const SizedBox(
                     height: 17.0,
                   ),
@@ -361,11 +411,12 @@ class _homePageState extends State<homePage> {
                     future: quote,
                     builder: (context, snapshot) {
                       if (snapshot.hasData) {
-                        return Bubble(
+                        return Center(
+                            child: Bubble(
                           alignment: Alignment.center,
-                          color: Color(0xFFCF726A),
+                          color: const Color(0xFFCF726A),
                           elevation: 8.0,
-                          padding: BubbleEdges.all(10),
+                          padding: const BubbleEdges.all(10),
                           style: redHomeBubble,
                           child: Center(
                             child: Text(
@@ -377,7 +428,7 @@ class _homePageState extends State<homePage> {
                               ),
                             ),
                           ),
-                        );
+                        ));
                       } else {
                         return Text("${snapshot.error}");
                       }

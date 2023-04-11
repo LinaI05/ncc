@@ -1,40 +1,33 @@
 import 'package:flutter/material.dart';
 import 'package:ncc/appscreens/hotlines_page.dart';
-import 'package:ncc/appscreens/checkin.dart';
 import 'settings_page.dart';
 import 'home_page.dart';
 import 'activities_page.dart';
 import 'copingcalendar_page.dart';
 import 'achieve_page.dart';
-import 'package:ncc/journalscreens/journal_page.dart';
 import 'package:persistent_bottom_nav_bar_v2/persistent-tab-view.dart';
 
 class LandingPage extends StatefulWidget {
   static const String id = 'home_page';
 
-  final int initialIndex;
+  final String selectedEmotion;
 
-  const LandingPage({Key? key, this.initialIndex = 0}) : super(key: key);
-
+  LandingPage({required this.selectedEmotion});
 
   @override
   State<LandingPage> createState() => _LandingPageState();
 }
 
 class _LandingPageState extends State<LandingPage> {
-  late PersistentTabController _controller;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = PersistentTabController(initialIndex: widget.initialIndex);
-  }
+  PersistentTabController _controller =
+      PersistentTabController(initialIndex: 0);
 
   List<Widget> _buildScreens() {
     return [
       homePage(),
       ActivitiesPage(),
       copingCalendar(),
+      //achievePage(),
       hotlinePage(),
       settingsPage(),
     ];
@@ -60,6 +53,12 @@ class _LandingPageState extends State<LandingPage> {
         activeColorPrimary: Color(0xFF115D6C),
         inactiveColorPrimary: Color(0xFF93D1DE),
       ),
+      // PersistentBottomNavBarItem(
+      //   icon: Icon(Icons.emoji_events),
+      //   title: 'Achievements',
+      //   activeColorPrimary: Color(0xFF115D6C),
+      //   inactiveColorPrimary: Color(0xFF93D1DE),
+      // ),
       PersistentBottomNavBarItem(
         icon: Icon(Icons.phone),
         title: 'Hotlines',

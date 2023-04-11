@@ -8,7 +8,7 @@ import 'package:persistent_bottom_nav_bar_v2/persistent-tab-view.dart';
 class AudioClass extends StatefulWidget {
   String url = '';
   int toolNum = 1;
-  AudioClass(String this.url, int this.toolNum);
+  AudioClass(this.url, this.toolNum, {Key? key}) : super(key: key);
   @override
   State<AudioClass> createState() => _AudioClassState();
 }
@@ -41,7 +41,7 @@ class _AudioClassState extends State<AudioClass> {
 
     audioPlayer.onPlayerStateChanged.listen((state) {
       setState(() {
-        isPlaying = state == PlayerState.PLAYING;
+        isPlaying = state == PlayerState.playing;
       });
     });
 
@@ -51,7 +51,7 @@ class _AudioClassState extends State<AudioClass> {
       });
     });
 
-    audioPlayer.onAudioPositionChanged.listen((newPosition) {
+    audioPlayer.onPositionChanged.listen((newPosition) {
       setState(() {
         position = newPosition;
       });
@@ -59,7 +59,7 @@ class _AudioClassState extends State<AudioClass> {
   }
 
   Future setAudio() async {
-    await audioPlayer.play(widget.url);
+    await audioPlayer.play(widget.url as Source);
   }
 
   @override

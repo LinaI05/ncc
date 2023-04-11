@@ -18,24 +18,112 @@ Future<void> updateAchievement(String achieveName) async {
 }
 
 Future<void> updateDepressionCalendar() async {
-  final FirebaseAuth authD = FirebaseAuth.instance;
-  final User? userD = authD.currentUser;
-  final uidD = userD?.uid;
-  DatabaseReference refD = FirebaseDatabase.instance.ref("users/$uidD");
-  await refD.update({
+  final FirebaseAuth auth = FirebaseAuth.instance;
+  final User? user = auth.currentUser;
+  final uid = user?.uid;
+  DatabaseReference ref = FirebaseDatabase.instance.ref("users/$uid");
+  await ref.update({
     "depression-calendar": true,
     "depression-sd": DateTime.now().toString(),
   });
 }
 
+Future<void> deleteDepressionCalendar() async {
+  final FirebaseAuth auth = FirebaseAuth.instance;
+  final User? user = auth.currentUser;
+  final uid = user?.uid;
+  DatabaseReference ref = FirebaseDatabase.instance.ref("users/$uid");
+  await ref.update({
+    "depression-calendar": false,
+    "depression-sd": "",
+  });
+}
+
 Future<void> updateAnxietyCalendar() async {
-  final FirebaseAuth authA = FirebaseAuth.instance;
-  final User? userA = authA.currentUser;
-  final uidA = userA?.uid;
-  DatabaseReference refA = FirebaseDatabase.instance.ref("users/$uidA");
-  await refA.update({
+  final FirebaseAuth auth = FirebaseAuth.instance;
+  final User? user = auth.currentUser;
+  final uid = user?.uid;
+  DatabaseReference ref = FirebaseDatabase.instance.ref("users/$uid");
+  await ref.update({
     "anxiety-calendar": true,
     "anxiety-sd": DateTime.now().toString(),
+  });
+}
+
+Future<void> deleteAnxietyCalendar() async {
+  final FirebaseAuth auth = FirebaseAuth.instance;
+  final User? user = auth.currentUser;
+  final uid = user?.uid;
+  DatabaseReference ref = FirebaseDatabase.instance.ref("users/$uid");
+  await ref.update({
+    "anxiety-calendar": false,
+    "anxiety-sd": "",
+  });
+}
+
+Future<void> updatePTSDCalendar() async {
+  final FirebaseAuth auth = FirebaseAuth.instance;
+  final User? user = auth.currentUser;
+  final uid = user?.uid;
+  DatabaseReference ref = FirebaseDatabase.instance.ref("users/$uid");
+  await ref.update({
+    "ptsd-calendar": true,
+    "ptsd-sd": DateTime.now().toString(),
+  });
+}
+
+Future<void> deletePTSDCalendar() async {
+  final FirebaseAuth auth = FirebaseAuth.instance;
+  final User? user = auth.currentUser;
+  final uid = user?.uid;
+  DatabaseReference ref = FirebaseDatabase.instance.ref("users/$uid");
+  await ref.update({
+    "ptsd-calendar": false,
+    "ptsd-sd": "",
+  });
+}
+
+Future<void> updateBPDCalendar() async {
+  final FirebaseAuth auth = FirebaseAuth.instance;
+  final User? user = auth.currentUser;
+  final uid = user?.uid;
+  DatabaseReference ref = FirebaseDatabase.instance.ref("users/$uid");
+  await ref.update({
+    "bpd-calendar": true,
+    "bpd-sd": DateTime.now().toString(),
+  });
+}
+
+Future<void> deleteBPDCalendar() async {
+  final FirebaseAuth auth = FirebaseAuth.instance;
+  final User? user = auth.currentUser;
+  final uid = user?.uid;
+  DatabaseReference ref = FirebaseDatabase.instance.ref("users/$uid");
+  await ref.update({
+    "bpd-calendar": false,
+    "bpd-sd": "",
+  });
+}
+
+Future<void> updateOCDCalendar() async {
+  final FirebaseAuth auth = FirebaseAuth.instance;
+  final User? user = auth.currentUser;
+  final uid = user?.uid;
+  DatabaseReference ref = FirebaseDatabase.instance.ref("users/$uid");
+  await ref.update({
+    "ocd-calendar": true,
+    "ocd-sd": DateTime.now().toString(),
+  });
+}
+
+Future<void> deleteOCDCalendar() async {
+  final FirebaseAuth auth = FirebaseAuth.instance;
+  final User? user = auth.currentUser;
+  final uid = user?.uid;
+  DatabaseReference ref = FirebaseDatabase.instance.ref("users/$uid");
+  await ref.update({
+    "ocd-calendar": false,
+    "ocd-sd": "",
   });
 }
 
@@ -55,10 +143,10 @@ void showGuestLoginAlert(context) {
                 pushNewScreenWithRouteSettings(
                   context,
                   screen: LandingPage(),
-                  settings: RouteSettings(name: LandingPage.id),
+                  settings: const RouteSettings(name: LandingPage.id),
                 );
               },
-              child: Text("Home Screen"),
+              child: const Text("Home Screen"),
             ),
             TextButton(
               onPressed: () {
@@ -95,6 +183,12 @@ Future<void> getUserAchievements() async {
       "depression-sd": "",
       "anxiety-calendar": false,
       "anxiety-sd": "",
+      "ptsd-calendar": false,
+      "ptsd-sd": "",
+      "bpd-calendar": false,
+      "bpd-sd": "",
+      "ocd-calendar": false,
+      "ocd-sd": "",
     });
     return;
   }

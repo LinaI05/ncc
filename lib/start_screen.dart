@@ -7,6 +7,7 @@ import 'package:persistent_bottom_nav_bar_v2/persistent-tab-view.dart';
 
 class StartScreen extends StatefulWidget {
   static const String id = 'start_screen';
+  const StartScreen({Key? key}) : super(key: key);
   @override
   State<StartScreen> createState() => _StartScreenState();
 }
@@ -23,6 +24,15 @@ class _StartScreenState extends State<StartScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
+              Container(
+                  height: 100,
+                  alignment: Alignment.center,
+                  padding: const EdgeInsets.all(8),
+                  child: Image.asset(
+                    'assets/images/noviCC_logo.png',
+                    height: 100,
+                    width: 200,
+                  )),
               Container(
                 alignment: Alignment.center,
                 padding: const EdgeInsets.all(30),
